@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>酒蔵OEM見積ツール</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">OEM</div>
+          <div>
+            <p class="eyebrow">Sake Brewery Pricing</p>
+            <h1>酒蔵OEM見積ツール</h1>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a href="#quote-input">案件条件</a>
+          <a href="#cost-input">原価条件</a>
+          <a href="#quote-breakdown">見積内訳</a>
+          <a href="#quote-preview">見積プレビュー</a>
+        </nav>
+
+        <section class="sidebar-panel">
+          <p class="eyebrow">できること</p>
+          <ul>
+            <li>本数、容量、歩留まりから必要酒液量を自動算出</li>
+            <li>資材費、充填費、固定費、利益率を一括反映</li>
+            <li>税抜・税込見積額と1本単価を即時計算</li>
+            <li>CSV出力、印刷、入力内容保存</li>
+          </ul>
+        </section>
+      </aside>
+
+      <main class="main">
+        <section class="hero">
+          <p class="eyebrow">Quotation Workspace</p>
+          <h2>日本酒OEM案件の前提を入れるだけで、見積金額をその場で固める。</h2>
+          <p class="hero-copy">
+            小ロット試作から量産案件まで、本数、資材単価、固定費、利益率、消費税をまとめて管理できます。
+          </p>
+          <div class="hero-actions">
+            <button id="download-csv" class="button">CSV出力</button>
+            <button id="print-quote" class="ghost-button">印刷</button>
+            <button id="reset-form" class="ghost-button">初期値に戻す</button>
+          </div>
+        </section>
+
+        <section class="summary-grid">
+          <article class="summary-card">
+            <p class="eyebrow">見積総額</p>
+            <p class="summary-value" id="summary-total">¥0</p>
+            <p class="muted">消費税込みの提示金額</p>
+          </article>
+          <article class="summary-card">
+            <p class="eyebrow">税抜単価 / 本</p>
+            <p class="summary-value" id="summary-unit-bottle">¥0</p>
+            <p class="muted">ロット総本数換算</p>
+          </article>
+          <article class="summary-card">
+            <p class="eyebrow">必要酒液量</p>
+            <p class="summary-value" id="summary-required-volume">0 L</p>
+            <p class="muted">歩留まりロス反映後</p>
+          </article>
+        </section>
+
+        <div class="content-grid">
+          <section class="panel" id="quote-input">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Project Input</p>
+                <h3>案件条件</h3>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label class="field">
+                <span>見積番号</span>
+                <input type="text" data-field="quoteNumber" />
+              </label>
+              <label class="field">
+                <span>発行日</span>
+                <input type="date" data-field="issuedOn" />
+              </label>
+              <label class="field">
+                <span>得意先名</span>
+                <input type="text" data-field="clientName" />
+              </label>
+              <label class="field full-span">
+                <span>案件名</span>
+                <input type="text" data-field="projectName" />
+              </label>
+              <label class="field">
+                <span>製品名</span>
+                <input type="text" data-field="productName" />
+              </label>
+              <label class="field">
+                <span>酒質</span>
+                <input type="text" data-field="sakeType" />
+              </label>
+              <label class="field">
+                <span>容量 (ml)</span>
+                <input type="number" data-field="bottleSizeMl" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>1ロット本数</span>
+                <input type="number" data-field="bottlesPerLot" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>ロット数</span>
+                <input type="number" data-field="lotCount" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>歩留まりロス (%)</span>
+                <input type="number" data-field="expectedLossRate" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>納期目安</span>
+                <input type="text" data-field="leadTime" />
+              </label>
+              <label class="field">
+                <span>支払条件</span>
+                <input type="text" data-field="paymentTerms" />
+              </label>
+              <label class="field full-span">
+                <span>備考</span>
+                <textarea data-field="note"></textarea>
+              </label>
+            </div>
+          </section>
+
+          <section class="panel" id="cost-input">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Cost Input</p>
+                <h3>原価・利益条件</h3>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label class="field">
+                <span>酒液原価 (円/L)</span>
+                <input type="number" data-field="liquidCostPerLiter" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>瓶 (円/本)</span>
+                <input type="number" data-field="bottleCostPerBottle" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>キャップ・栓 (円/本)</span>
+                <input type="number" data-field="capCostPerBottle" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>ラベル (円/本)</span>
+                <input type="number" data-field="labelCostPerBottle" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>箱・梱包 (円/本)</span>
+                <input type="number" data-field="cartonCostPerBottle" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>充填・火入れ (円/本)</span>
+                <input type="number" data-field="fillingCostPerBottle" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>品質検査 (円/本)</span>
+                <input type="number" data-field="qaCostPerBottle" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>保管・物流 (円/本)</span>
+                <input type="number" data-field="logisticsCostPerBottle" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>試作・レシピ調整 (円)</span>
+                <input type="number" data-field="developmentFee" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>表示・デザイン調整 (円)</span>
+                <input type="number" data-field="designFee" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>進行管理・申請対応 (円)</span>
+                <input type="number" data-field="adminFee" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>その他費目名</span>
+                <input type="text" data-field="miscFeeLabel" />
+              </label>
+              <label class="field">
+                <span>その他費用 (円)</span>
+                <input type="number" data-field="miscFee" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>利益率 (%)</span>
+                <input type="number" data-field="marginRate" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>消費税率 (%)</span>
+                <input type="number" data-field="taxRate" min="0" step="0.1" />
+              </label>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel" id="quote-breakdown">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Breakdown</p>
+              <h3>見積内訳</h3>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="quote-table">
+              <thead>
+                <tr>
+                  <th>費目</th>
+                  <th>数量</th>
+                  <th>単価</th>
+                  <th>金額</th>
+                  <th>区分</th>
+                </tr>
+              </thead>
+              <tbody id="line-items-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <div class="content-grid">
+          <section class="panel" id="quote-preview">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Preview</p>
+                <h3>見積プレビュー</h3>
+              </div>
+            </div>
+
+            <div class="preview-card">
+              <div class="preview-head">
+                <div>
+                  <p class="eyebrow">Quotation To</p>
+                  <strong id="preview-client">-</strong>
+                </div>
+                <div class="align-right">
+                  <p class="eyebrow">No.</p>
+                  <strong id="preview-number">-</strong>
+                </div>
+              </div>
+
+              <div class="preview-project">
+                <h4 id="preview-project">案件名</h4>
+                <p id="preview-product" class="muted">製品名 / 酒質</p>
+              </div>
+
+              <div class="totals">
+                <div class="total-row">
+                  <span>原価小計</span>
+                  <strong id="preview-cost-subtotal">¥0</strong>
+                </div>
+                <div class="total-row">
+                  <span>利益</span>
+                  <strong id="preview-margin-amount">¥0</strong>
+                </div>
+                <div class="total-row">
+                  <span>見積金額 (税抜)</span>
+                  <strong id="preview-quote-subtotal">¥0</strong>
+                </div>
+                <div class="total-row">
+                  <span>消費税</span>
+                  <strong id="preview-tax-amount">¥0</strong>
+                </div>
+                <div class="total-row total-row-strong">
+                  <span>御見積金額(税込)</span>
+                  <strong id="preview-total">¥0</strong>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Assumptions</p>
+                <h3>前提条件メモ</h3>
+              </div>
+            </div>
+
+            <div class="tag-row">
+              <span class="tag" id="tag-bottle-count">総本数 0 本</span>
+              <span class="tag" id="tag-ordered-volume">受注容量 0 L</span>
+              <span class="tag" id="tag-unit-bottle">税抜単価 0 / 本</span>
+              <span class="tag" id="tag-unit-liter">税抜単価 0 / L</span>
+            </div>
+
+            <div class="notes-stack" id="assumptions-list"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
