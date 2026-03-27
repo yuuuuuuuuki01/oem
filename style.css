@@ -194,7 +194,7 @@ a {
 }
 
 .summary-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .summary-card {
@@ -235,6 +235,16 @@ a {
 .field span {
   font-size: 13px;
   color: var(--muted);
+}
+
+.subsection-title {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--accent-2);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .full-span {
@@ -343,7 +353,7 @@ textarea {
 }
 
 .tag-row {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .tag {

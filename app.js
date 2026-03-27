@@ -1,11 +1,21 @@
-const STORAGE_KEY = "sake-oem-quote-form-v1";
+const STORAGE_KEY = "sake-oem-quote-form-v2";
 
 const numericFields = new Set([
   "bottleSizeMl",
   "bottlesPerLot",
   "lotCount",
   "expectedLossRate",
-  "liquidCostPerLiter",
+  "brownRiceCostPerKg",
+  "ricePolishingRatio",
+  "litersPerKgWhiteRice",
+  "kojiRatioPercent",
+  "alcoholAdditionRate",
+  "alcoholCostPerLiter",
+  "otherIngredientCostPerLiter",
+  "brewingDays",
+  "staffCount",
+  "laborCostPerPersonDay",
+  "facilityCostPerDay",
   "bottleCostPerBottle",
   "capCostPerBottle",
   "labelCostPerBottle",
@@ -41,7 +51,17 @@ function createDefaultForm() {
     bottlesPerLot: 1200,
     lotCount: 3,
     expectedLossRate: 3,
-    liquidCostPerLiter: 780,
+    brownRiceCostPerKg: 420,
+    ricePolishingRatio: 60,
+    litersPerKgWhiteRice: 2.25,
+    kojiRatioPercent: 22,
+    alcoholAdditionRate: 0.08,
+    alcoholCostPerLiter: 215,
+    otherIngredientCostPerLiter: 36,
+    brewingDays: 28,
+    staffCount: 3,
+    laborCostPerPersonDay: 18000,
+    facilityCostPerDay: 32000,
     bottleCostPerBottle: 92,
     capCostPerBottle: 18,
     labelCostPerBottle: 24,
@@ -80,7 +100,7 @@ function formatCurrency(value) {
 
 function formatQuantity(value) {
   return new Intl.NumberFormat("ja-JP", {
-    minimumFractionDigits: Number.isInteger(value) ? 0 : 0,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2
   }).format(value);
 }
@@ -106,15 +126,37 @@ function calculateQuote(form) {
   const yieldRate = 1 - cappedLossRate / 100;
   const requiredVolumeLiters = yieldRate > 0 ? orderedVolumeLiters / yieldRate : orderedVolumeLiters;
 
+  const litersPerKgWhiteRice = sanitizeNumber(form.litersPerKgWhiteRice);
+  const whiteRiceKg = litersPerKgWhiteRice > 0 ? requiredVolumeLiters / litersPerKgWhiteRice : 0;
+  const polishingRatio = Math.min(Math.max(sanitizeNumber(form.ricePolishingRatio), 1), 100) / 100;
+  const brownRiceKg = whiteRiceKg / polishingRatio;
+  const kojiRatio = sanitizeNumber(form.kojiRatioPercent) / 100;
+  const kojiRiceKg = whiteRiceKg * kojiRatio;
+  const kakemaiKg = Math.max(whiteRiceKg - kojiRiceKg, 0);
+  const alcoholLiters = requiredVolumeLiters * sanitizeNumber(form.alcoholAdditionRate);
+  const laborPersonDays = sanitizeNumber(form.brewingDays) * sanitizeNumber(form.staffCount);
+
+  const riceCost = brownRiceKg * sanitizeNumber(form.brownRiceCostPerKg);
+  const alcoholCost = alcoholLiters * sanitizeNumber(form.alcoholCostPerLiter);
+  const otherIngredientCost = requiredVolumeLiters * sanitizeNumber(form.otherIngredientCostPerLiter);
+  const laborCost = laborPersonDays * sanitizeNumber(form.laborCostPerPersonDay);
+  const facilityCost = sanitizeNumber(form.brewingDays) * sanitizeNumber(form.facilityCostPerDay);
+  const liquidManufacturingCost = roundCurrency(riceCost + alcoholCost + otherIngredientCost + laborCost + facilityCost);
+  const derivedLiquidCostPerLiter = requiredVolumeLiters > 0 ? liquidManufacturingCost / requiredVolumeLiters : 0;
+
   const lineItems = [
-    createLineItem("酒液原価", "L", requiredVolumeLiters, form.liquidCostPerLiter, "変動費"),
-    createLineItem("瓶", "本", bottleCount, form.bottleCostPerBottle, "変動費"),
-    createLineItem("キャップ・栓", "本", bottleCount, form.capCostPerBottle, "変動費"),
-    createLineItem("ラベル", "本", bottleCount, form.labelCostPerBottle, "変動費"),
-    createLineItem("箱・梱包", "本", bottleCount, form.cartonCostPerBottle, "変動費"),
-    createLineItem("充填・火入れ", "本", bottleCount, form.fillingCostPerBottle, "変動費"),
-    createLineItem("品質検査", "本", bottleCount, form.qaCostPerBottle, "変動費"),
-    createLineItem("保管・物流", "本", bottleCount, form.logisticsCostPerBottle, "変動費"),
+    createLineItem("玄米原料", "kg", brownRiceKg, form.brownRiceCostPerKg, "酒液製造"),
+    createLineItem("原料用アルコール", "L", alcoholLiters, form.alcoholCostPerLiter, "酒液製造"),
+    createLineItem("その他副資材", "L", requiredVolumeLiters, form.otherIngredientCostPerLiter, "酒液製造"),
+    createLineItem("人件費", "人日", laborPersonDays, form.laborCostPerPersonDay, "酒液製造"),
+    createLineItem("設備・資材利用費", "日", form.brewingDays, form.facilityCostPerDay, "酒液製造"),
+    createLineItem("瓶", "本", bottleCount, form.bottleCostPerBottle, "包装・出荷"),
+    createLineItem("キャップ・栓", "本", bottleCount, form.capCostPerBottle, "包装・出荷"),
+    createLineItem("ラベル", "本", bottleCount, form.labelCostPerBottle, "包装・出荷"),
+    createLineItem("箱・梱包", "本", bottleCount, form.cartonCostPerBottle, "包装・出荷"),
+    createLineItem("充填・火入れ", "本", bottleCount, form.fillingCostPerBottle, "包装・出荷"),
+    createLineItem("品質検査", "本", bottleCount, form.qaCostPerBottle, "包装・出荷"),
+    createLineItem("保管・物流", "本", bottleCount, form.logisticsCostPerBottle, "包装・出荷"),
     createLineItem("試作・レシピ調整", "式", 1, form.developmentFee, "固定費"),
     createLineItem("表示・デザイン調整", "式", 1, form.designFee, "固定費"),
     createLineItem("進行管理・申請対応", "式", 1, form.adminFee, "固定費"),
@@ -140,7 +182,9 @@ function calculateQuote(form) {
 
   const assumptions = [
     `総本数 ${formatQuantity(bottleCount)} 本、容量 ${formatQuantity(sanitizeNumber(form.bottleSizeMl))} ml で計算。`,
-    `歩留まりロス ${formatQuantity(cappedLossRate)}% を見込み、必要酒液量は ${formatQuantity(roundQuantity(requiredVolumeLiters))} L。`,
+    `必要酒液量 ${formatQuantity(roundQuantity(requiredVolumeLiters))} L、酒液原価は ${formatCurrency(derivedLiquidCostPerLiter)} / L。`,
+    `白米使用量 ${formatQuantity(roundQuantity(whiteRiceKg))} kg、玄米調達量 ${formatQuantity(roundQuantity(brownRiceKg))} kg、麹米 ${formatQuantity(roundQuantity(kojiRiceKg))} kg、掛米 ${formatQuantity(roundQuantity(kakemaiKg))} kg。`,
+    `原料用アルコール ${formatQuantity(roundQuantity(alcoholLiters))} L、醸造期間 ${formatQuantity(sanitizeNumber(form.brewingDays))} 日、人日 ${formatQuantity(roundQuantity(laborPersonDays))} で算定。`,
     `${formatQuantity(sanitizeNumber(form.taxRate))}% の消費税を加算。`
   ];
 
@@ -160,6 +204,14 @@ function calculateQuote(form) {
     bottleCount,
     orderedVolumeLiters: roundQuantity(orderedVolumeLiters),
     requiredVolumeLiters: roundQuantity(requiredVolumeLiters),
+    whiteRiceKg: roundQuantity(whiteRiceKg),
+    brownRiceKg: roundQuantity(brownRiceKg),
+    kojiRiceKg: roundQuantity(kojiRiceKg),
+    kakemaiKg: roundQuantity(kakemaiKg),
+    alcoholLiters: roundQuantity(alcoholLiters),
+    laborPersonDays: roundQuantity(laborPersonDays),
+    liquidManufacturingCost,
+    derivedLiquidCostPerLiter: roundCurrency(derivedLiquidCostPerLiter),
     costSubtotal,
     marginAmount,
     quoteSubtotal,
@@ -231,12 +283,14 @@ function render() {
 
   document.getElementById("summary-total").textContent = formatCurrency(result.quoteTotal);
   document.getElementById("summary-unit-bottle").textContent = formatCurrency(result.unitPricePerBottle);
+  document.getElementById("summary-liquid-unit-cost").textContent = formatCurrency(result.derivedLiquidCostPerLiter);
   document.getElementById("summary-required-volume").textContent = `${formatQuantity(result.requiredVolumeLiters)} L`;
 
   document.getElementById("preview-client").textContent = formState.clientName || "-";
   document.getElementById("preview-number").textContent = formState.quoteNumber || "-";
   document.getElementById("preview-project").textContent = formState.projectName || "案件名未入力";
   document.getElementById("preview-product").textContent = `${formState.productName || "製品名未入力"} / ${formState.sakeType || "酒質未入力"}`;
+  document.getElementById("preview-liquid-manufacturing-cost").textContent = formatCurrency(result.liquidManufacturingCost);
   document.getElementById("preview-cost-subtotal").textContent = formatCurrency(result.costSubtotal);
   document.getElementById("preview-margin-amount").textContent = formatCurrency(result.marginAmount);
   document.getElementById("preview-quote-subtotal").textContent = formatCurrency(result.quoteSubtotal);
@@ -245,8 +299,10 @@ function render() {
 
   document.getElementById("tag-bottle-count").textContent = `総本数 ${formatQuantity(result.bottleCount)} 本`;
   document.getElementById("tag-ordered-volume").textContent = `受注容量 ${formatQuantity(result.orderedVolumeLiters)} L`;
+  document.getElementById("tag-liquid-unit-cost").textContent = `酒液原価 ${formatCurrency(result.derivedLiquidCostPerLiter)} / L`;
   document.getElementById("tag-unit-bottle").textContent = `税抜単価 ${formatCurrency(result.unitPricePerBottle)} / 本`;
-  document.getElementById("tag-unit-liter").textContent = `税抜単価 ${formatCurrency(result.unitPricePerLiter)} / L`;
+  document.getElementById("tag-white-rice").textContent = `白米使用量 ${formatQuantity(result.whiteRiceKg)} kg`;
+  document.getElementById("tag-person-days").textContent = `人日 ${formatQuantity(result.laborPersonDays)}`;
 
   renderLineItems(result.lineItems);
   renderAssumptions(result.assumptions);
@@ -276,6 +332,22 @@ function exportCsv() {
     ["bottle_count", result.bottleCount],
     ["ordered_volume_liters", result.orderedVolumeLiters],
     ["required_volume_liters", result.requiredVolumeLiters],
+    ["brown_rice_cost_per_kg", formState.brownRiceCostPerKg],
+    ["rice_polishing_ratio", formState.ricePolishingRatio],
+    ["liters_per_kg_white_rice", formState.litersPerKgWhiteRice],
+    ["koji_ratio_percent", formState.kojiRatioPercent],
+    ["alcohol_addition_rate", formState.alcoholAdditionRate],
+    ["alcohol_cost_per_liter", formState.alcoholCostPerLiter],
+    ["other_ingredient_cost_per_liter", formState.otherIngredientCostPerLiter],
+    ["brewing_days", formState.brewingDays],
+    ["staff_count", formState.staffCount],
+    ["labor_cost_per_person_day", formState.laborCostPerPersonDay],
+    ["facility_cost_per_day", formState.facilityCostPerDay],
+    ["white_rice_kg", result.whiteRiceKg],
+    ["brown_rice_kg", result.brownRiceKg],
+    ["alcohol_liters", result.alcoholLiters],
+    ["labor_person_days", result.laborPersonDays],
+    ["derived_liquid_cost_per_liter", result.derivedLiquidCostPerLiter],
     ["quote_subtotal", result.quoteSubtotal],
     ["tax_amount", result.taxAmount],
     ["quote_total", result.quoteTotal],

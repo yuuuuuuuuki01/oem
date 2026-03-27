@@ -19,7 +19,7 @@
 
         <nav class="sidebar-nav">
           <a href="#quote-input">案件条件</a>
-          <a href="#cost-input">原価条件</a>
+          <a href="#cost-input">製造原価条件</a>
           <a href="#quote-breakdown">見積内訳</a>
           <a href="#quote-preview">見積プレビュー</a>
         </nav>
@@ -27,10 +27,10 @@
         <section class="sidebar-panel">
           <p class="eyebrow">できること</p>
           <ul>
-            <li>本数、容量、歩留まりから必要酒液量を自動算出</li>
-            <li>資材費、充填費、固定費、利益率を一括反映</li>
-            <li>税抜・税込見積額と1本単価を即時計算</li>
-            <li>CSV出力、印刷、入力内容保存</li>
+            <li>米単価、精米歩合、歩留まりから酒液原価を自動算出</li>
+            <li>原料用アルコールやその他副資材を酒液原価に反映</li>
+            <li>醸造日数、人員数、設備・資材利用費から期間コストを算定</li>
+            <li>包装費、固定費、利益率、消費税まで含めて見積化</li>
           </ul>
         </section>
       </aside>
@@ -38,9 +38,9 @@
       <main class="main">
         <section class="hero">
           <p class="eyebrow">Quotation Workspace</p>
-          <h2>日本酒OEM案件の前提を入れるだけで、見積金額をその場で固める。</h2>
+          <h2>米と副資材、醸造期間、人件費から、日本酒OEMの酒液原価を先に固める。</h2>
           <p class="hero-copy">
-            小ロット試作から量産案件まで、本数、資材単価、固定費、利益率、消費税をまとめて管理できます。
+            酒液原価/L を手入力するのではなく、原材料と製造期間起点で見積を組み立てます。包装費や固定費、利益率もそのまま全体見積へ反映します。
           </p>
           <div class="hero-actions">
             <button id="download-csv" class="button">CSV出力</button>
@@ -59,6 +59,11 @@
             <p class="eyebrow">税抜単価 / 本</p>
             <p class="summary-value" id="summary-unit-bottle">¥0</p>
             <p class="muted">ロット総本数換算</p>
+          </article>
+          <article class="summary-card">
+            <p class="eyebrow">酒液原価 / L</p>
+            <p class="summary-value" id="summary-liquid-unit-cost">¥0</p>
+            <p class="muted">原料と製造期間から算定</p>
           </article>
           <article class="summary-card">
             <p class="eyebrow">必要酒液量</p>
@@ -136,15 +141,58 @@
             <div class="panel-header">
               <div>
                 <p class="eyebrow">Cost Input</p>
-                <h3>原価・利益条件</h3>
+                <h3>製造原価条件</h3>
               </div>
             </div>
 
             <div class="form-grid">
+              <div class="subsection-title full-span">酒液製造条件</div>
               <label class="field">
-                <span>酒液原価 (円/L)</span>
-                <input type="number" data-field="liquidCostPerLiter" min="0" step="1" />
+                <span>玄米単価 (円/kg)</span>
+                <input type="number" data-field="brownRiceCostPerKg" min="0" step="1" />
               </label>
+              <label class="field">
+                <span>精米歩合 (%)</span>
+                <input type="number" data-field="ricePolishingRatio" min="1" max="100" step="0.1" />
+              </label>
+              <label class="field">
+                <span>白米1kgあたり製成酒量 (L/kg)</span>
+                <input type="number" data-field="litersPerKgWhiteRice" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>麹歩合 (%)</span>
+                <input type="number" data-field="kojiRatioPercent" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>原料用アルコール添加率 (L/L)</span>
+                <input type="number" data-field="alcoholAdditionRate" min="0" step="0.01" />
+              </label>
+              <label class="field">
+                <span>原料用アルコール単価 (円/L)</span>
+                <input type="number" data-field="alcoholCostPerLiter" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>その他副資材費 (円/L)</span>
+                <input type="number" data-field="otherIngredientCostPerLiter" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>醸造期間 (日)</span>
+                <input type="number" data-field="brewingDays" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>必要人員数 (人)</span>
+                <input type="number" data-field="staffCount" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>人件費 (円/人日)</span>
+                <input type="number" data-field="laborCostPerPersonDay" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>設備・資材利用費 (円/日)</span>
+                <input type="number" data-field="facilityCostPerDay" min="0" step="1" />
+              </label>
+
+              <div class="subsection-title full-span">包装・出荷条件</div>
               <label class="field">
                 <span>瓶 (円/本)</span>
                 <input type="number" data-field="bottleCostPerBottle" min="0" step="1" />
@@ -173,6 +221,8 @@
                 <span>保管・物流 (円/本)</span>
                 <input type="number" data-field="logisticsCostPerBottle" min="0" step="1" />
               </label>
+
+              <div class="subsection-title full-span">固定費・利益条件</div>
               <label class="field">
                 <span>試作・レシピ調整 (円)</span>
                 <input type="number" data-field="developmentFee" min="0" step="1" />
@@ -257,6 +307,10 @@
 
               <div class="totals">
                 <div class="total-row">
+                  <span>酒液製造原価</span>
+                  <strong id="preview-liquid-manufacturing-cost">¥0</strong>
+                </div>
+                <div class="total-row">
                   <span>原価小計</span>
                   <strong id="preview-cost-subtotal">¥0</strong>
                 </div>
@@ -291,8 +345,10 @@
             <div class="tag-row">
               <span class="tag" id="tag-bottle-count">総本数 0 本</span>
               <span class="tag" id="tag-ordered-volume">受注容量 0 L</span>
+              <span class="tag" id="tag-liquid-unit-cost">酒液原価 0 / L</span>
               <span class="tag" id="tag-unit-bottle">税抜単価 0 / 本</span>
-              <span class="tag" id="tag-unit-liter">税抜単価 0 / L</span>
+              <span class="tag" id="tag-white-rice">白米使用量 0 kg</span>
+              <span class="tag" id="tag-person-days">人日 0</span>
             </div>
 
             <div class="notes-stack" id="assumptions-list"></div>
