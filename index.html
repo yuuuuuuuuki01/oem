@@ -38,9 +38,9 @@
       <main class="main">
         <section class="hero">
           <p class="eyebrow">Quotation Workspace</p>
-          <h2>米と副資材、醸造期間、人件費から、日本酒OEMの酒液原価を先に固める。</h2>
+          <h2>仕込予定量と度数、原料構成まで含めて、日本酒OEMの酒液原価を組み立てる。</h2>
           <p class="hero-copy">
-            酒液原価/L を手入力するのではなく、原材料と製造期間起点で見積を組み立てます。包装費や固定費、利益率もそのまま全体見積へ反映します。
+            酒液原価/L を手入力するのではなく、原材料、原料用アルコール、ブレンド酒、製造期間起点で見積を組み立てます。包装費や固定費、利益率もそのまま全体見積へ反映します。
           </p>
           <div class="hero-actions">
             <button id="download-csv" class="button">CSV出力</button>
@@ -66,9 +66,14 @@
             <p class="muted">原料と製造期間から算定</p>
           </article>
           <article class="summary-card">
-            <p class="eyebrow">必要酒液量</p>
-            <p class="summary-value" id="summary-required-volume">0 L</p>
-            <p class="muted">歩留まりロス反映後</p>
+            <p class="eyebrow">仕込予定量</p>
+            <p class="summary-value" id="summary-brew-volume">0 L</p>
+            <p class="muted">見積の製造基準量</p>
+          </article>
+          <article class="summary-card">
+            <p class="eyebrow">アルコール度数</p>
+            <p class="summary-value" id="summary-alcohol-percent">0%</p>
+            <p class="muted">目標度数 / 推定度数</p>
           </article>
         </section>
 
@@ -105,6 +110,10 @@
               <label class="field">
                 <span>酒質</span>
                 <input type="text" data-field="sakeType" />
+              </label>
+              <label class="field">
+                <span>目標アルコール度数 (%)</span>
+                <input type="number" data-field="targetAlcoholPercent" min="0" step="0.1" />
               </label>
               <label class="field">
                 <span>容量 (ml)</span>
@@ -148,6 +157,10 @@
             <div class="form-grid">
               <div class="subsection-title full-span">酒液製造条件</div>
               <label class="field">
+                <span>仕込予定量 (L)</span>
+                <input type="number" data-field="plannedBrewVolumeLiters" min="0" step="1" />
+              </label>
+              <label class="field">
                 <span>玄米単価 (円/kg)</span>
                 <input type="number" data-field="brownRiceCostPerKg" min="0" step="1" />
               </label>
@@ -164,12 +177,36 @@
                 <input type="number" data-field="kojiRatioPercent" min="0" step="0.1" />
               </label>
               <label class="field">
+                <span>ベース酒アルコール度数 (%)</span>
+                <input type="number" data-field="baseSakeAlcoholPercent" min="0" step="0.1" />
+              </label>
+              <label class="field">
                 <span>原料用アルコール添加率 (L/L)</span>
                 <input type="number" data-field="alcoholAdditionRate" min="0" step="0.01" />
               </label>
               <label class="field">
                 <span>原料用アルコール単価 (円/L)</span>
                 <input type="number" data-field="alcoholCostPerLiter" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>原料用アルコール度数 (%)</span>
+                <input type="number" data-field="alcoholStrengthPercent" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>ブレンド酒名</span>
+                <input type="text" data-field="otherLiquorName" />
+              </label>
+              <label class="field">
+                <span>ブレンド酒添加率 (L/L)</span>
+                <input type="number" data-field="otherLiquorAdditionRate" min="0" step="0.01" />
+              </label>
+              <label class="field">
+                <span>ブレンド酒単価 (円/L)</span>
+                <input type="number" data-field="otherLiquorCostPerLiter" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>ブレンド酒度数 (%)</span>
+                <input type="number" data-field="otherLiquorAlcoholPercent" min="0" step="0.1" />
               </label>
               <label class="field">
                 <span>その他副資材費 (円/L)</span>
@@ -344,11 +381,13 @@
 
             <div class="tag-row">
               <span class="tag" id="tag-bottle-count">総本数 0 本</span>
-              <span class="tag" id="tag-ordered-volume">受注容量 0 L</span>
+              <span class="tag" id="tag-required-volume">必要酒液量 0 L</span>
+              <span class="tag" id="tag-brew-volume">仕込予定量 0 L</span>
               <span class="tag" id="tag-liquid-unit-cost">酒液原価 0 / L</span>
               <span class="tag" id="tag-unit-bottle">税抜単価 0 / 本</span>
               <span class="tag" id="tag-white-rice">白米使用量 0 kg</span>
               <span class="tag" id="tag-person-days">人日 0</span>
+              <span class="tag" id="tag-alcohol-percent">推定度数 0%</span>
             </div>
 
             <div class="notes-stack" id="assumptions-list"></div>
