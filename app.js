@@ -3,7 +3,6 @@ const STORAGE_KEY = "sake-oem-quote-form-v2";
 const numericFields = new Set([
   "bottleSizeMl",
   "bottlesPerLot",
-  "lotCount",
   "expectedLossRate",
   "targetAlcoholPercent",
   "plannedBrewVolumeLiters",
@@ -57,7 +56,7 @@ function createDefaultForm() {
     targetAlcoholPercent: 15,
     bottleSizeMl: 720,
     bottlesPerLot: 1200,
-    lotCount: 3,
+    lotCount: 0,
     expectedLossRate: 3,
     plannedBrewVolumeLiters: 2700,
     brownRiceCostPerKg: 420,
@@ -135,12 +134,15 @@ function createLineItem(label, unit, quantity, unitPrice, category) {
 }
 
 function calculateQuote(form) {
-  const bottleCount = Math.round(sanitizeNumber(form.bottlesPerLot) * sanitizeNumber(form.lotCount));
-  const orderedVolumeLiters = (bottleCount * sanitizeNumber(form.bottleSizeMl)) / 1000;
+  const plannedBrewVolumeLiters = sanitizeNumber(form.plannedBrewVolumeLiters);
   const cappedLossRate = Math.min(sanitizeNumber(form.expectedLossRate), 95);
   const yieldRate = 1 - cappedLossRate / 100;
+  const bottlableVolumeLiters = plannedBrewVolumeLiters * yieldRate;
+  const bottleSizeMl = sanitizeNumber(form.bottleSizeMl);
+  const bottleCount = bottleSizeMl > 0 ? Math.floor((bottlableVolumeLiters * 1000) / bottleSizeMl) : 0;
+  const orderedVolumeLiters = (bottleCount * bottleSizeMl) / 1000;
+  const lotCount = sanitizeNumber(form.bottlesPerLot) > 0 ? bottleCount / sanitizeNumber(form.bottlesPerLot) : 0;
   const requiredVolumeLiters = yieldRate > 0 ? orderedVolumeLiters / yieldRate : orderedVolumeLiters;
-  const plannedBrewVolumeLiters = sanitizeNumber(form.plannedBrewVolumeLiters) || requiredVolumeLiters;
   const rawAlcoholVolume = plannedBrewVolumeLiters * sanitizeNumber(form.alcoholAdditionRate);
   const otherLiquorVolume = plannedBrewVolumeLiters * sanitizeNumber(form.otherLiquorAdditionRate);
   const sakeBaseVolume = Math.max(plannedBrewVolumeLiters - rawAlcoholVolume - otherLiquorVolume, 0);
@@ -208,6 +210,7 @@ function calculateQuote(form) {
 
   const assumptions = [
     `総本数 ${formatQuantity(bottleCount)} 本、容量 ${formatQuantity(sanitizeNumber(form.bottleSizeMl))} ml で計算。`,
+    `1ロット ${formatQuantity(sanitizeNumber(form.bottlesPerLot))} 本として、想定ロット数は ${formatQuantity(roundQuantity(lotCount))} ロット。`,
     `必要酒液量 ${formatQuantity(roundQuantity(requiredVolumeLiters))} L に対して、仕込予定量は ${formatQuantity(roundQuantity(plannedBrewVolumeLiters))} L、差分は ${formatQuantity(roundQuantity(productionGapLiters))} L。`,
     `目標度数 ${formatQuantity(sanitizeNumber(form.targetAlcoholPercent))}%、推定ブレンド度数 ${formatQuantity(roundQuantity(estimatedAlcoholPercent))}%。`,
     `酒液原価は ${formatCurrency(derivedLiquidCostPerLiter)} / L。ベース酒 ${formatQuantity(roundQuantity(sakeBaseVolume))} L、原料用アルコール ${formatQuantity(roundQuantity(rawAlcoholVolume))} L、${form.otherLiquorName || "ブレンド酒"} ${formatQuantity(roundQuantity(otherLiquorVolume))} L。`,
@@ -238,6 +241,7 @@ function calculateQuote(form) {
 
   return {
     bottleCount,
+    lotCount: roundQuantity(lotCount),
     orderedVolumeLiters: roundQuantity(orderedVolumeLiters),
     requiredVolumeLiters: roundQuantity(requiredVolumeLiters),
     plannedBrewVolumeLiters: roundQuantity(plannedBrewVolumeLiters),
@@ -321,6 +325,7 @@ function renderAssumptions(assumptions) {
 
 function render() {
   const result = calculateQuote(formState);
+  formState.lotCount = result.lotCount;
 
   document.getElementById("summary-total").textContent = formatCurrency(result.quoteTotal);
   document.getElementById("summary-unit-bottle").textContent = formatCurrency(result.unitPricePerBottle);
@@ -347,6 +352,7 @@ function render() {
   document.getElementById("tag-white-rice").textContent = `白米使用量 ${formatQuantity(result.whiteRiceKg)} kg`;
   document.getElementById("tag-person-days").textContent = `人日 ${formatQuantity(result.laborPersonDays)}`;
   document.getElementById("tag-alcohol-percent").textContent = `推定度数 ${formatQuantity(result.estimatedAlcoholPercent)}%`;
+  document.querySelector('[data-field="lotCount"]').value = result.lotCount;
 
   renderLineItems(result.lineItems);
   renderAssumptions(result.assumptions);
