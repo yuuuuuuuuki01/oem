@@ -182,14 +182,21 @@
             </div>
 
             <div class="subsection-title">原酒と添加物の設計</div>
+            <p class="field-hint calc-caption">
+              アルコールを持つ原料は、目標純アルコールに対してどの原料が何%分を担うかで指定します。入力した度数から必要量を自動計算します。
+            </p>
             <div class="form-grid">
               <label class="field">
                 <span>原酒アルコール度数 (%)</span>
                 <input type="number" data-field="baseSakeAlcoholPercent" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>原料用アルコール比率 (%・最終液量比)</span>
-                <input type="number" data-field="alcoholAdditionPercent" min="0" step="0.1" />
+                <span>原酒寄与率 (%・目標純アルコール比)</span>
+                <input type="number" data-field="genshuContributionPercent" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>原料用アルコール寄与率 (%・目標純アルコール比)</span>
+                <input type="number" data-field="alcoholContributionPercent" min="0" step="0.1" />
               </label>
               <label class="field">
                 <span>原料用アルコール単価 (円/L)</span>
@@ -204,8 +211,8 @@
                 <input type="text" data-field="otherLiquorName" />
               </label>
               <label class="field">
-                <span>ブレンド酒比率 (%・最終液量比)</span>
-                <input type="number" data-field="otherLiquorBlendPercent" min="0" step="0.1" />
+                <span>ブレンド酒寄与率 (%・目標純アルコール比)</span>
+                <input type="number" data-field="otherLiquorContributionPercent" min="0" step="0.1" />
               </label>
               <label class="field">
                 <span>ブレンド酒単価 (円/L)</span>
@@ -220,7 +227,7 @@
                 <input type="text" data-field="fruitIngredientName" />
               </label>
               <label class="field">
-                <span>果汁等比率 (%・最終液量比)</span>
+                <span>果汁等比率 (%・製造必要量比)</span>
                 <input type="number" data-field="fruitIngredientBlendPercent" min="0" step="0.1" />
               </label>
               <label class="field">
@@ -236,7 +243,7 @@
 
             <div class="subsection-title">自動計算結果</div>
             <p class="field-hint calc-caption">
-              出荷予定量を基準に、歩留まりロスを見込んだ製造必要量を先に算定し、その量に対して原酒量と加水量を逆算します。酒税は出荷量ベースで自動算定します。
+              出荷予定量を基準に、歩留まりロスを見込んだ製造必要量を先に算定し、純アルコール寄与率と各原料の度数から必要量を逆算します。酒税は出荷量ベースで自動算定します。
             </p>
             <div class="calc-grid">
               <article class="calc-card">

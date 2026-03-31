@@ -12,10 +12,11 @@ const numericFields = new Set([
   "litersPerKgWhiteRice",
   "kojiRatioPercent",
   "baseSakeAlcoholPercent",
-  "alcoholAdditionPercent",
+  "genshuContributionPercent",
+  "alcoholContributionPercent",
   "alcoholCostPerLiter",
   "alcoholStrengthPercent",
-  "otherLiquorBlendPercent",
+  "otherLiquorContributionPercent",
   "otherLiquorCostPerLiter",
   "otherLiquorAlcoholPercent",
   "fruitIngredientBlendPercent",
@@ -76,11 +77,12 @@ function createDefaultForm() {
     litersPerKgWhiteRice: 2.25,
     kojiRatioPercent: 22,
     baseSakeAlcoholPercent: 17,
-    alcoholAdditionPercent: 5,
+    genshuContributionPercent: 72,
+    alcoholContributionPercent: 18,
     alcoholCostPerLiter: 215,
     alcoholStrengthPercent: 95,
     otherLiquorName: "ブレンド酒",
-    otherLiquorBlendPercent: 5,
+    otherLiquorContributionPercent: 10,
     otherLiquorCostPerLiter: 280,
     otherLiquorAlcoholPercent: 12,
     fruitIngredientName: "果汁等",
@@ -189,18 +191,40 @@ function calculateQuote(form) {
   const finalBlendVolumeLiters = productionVolumeLiters;
   const targetAlcoholPercent = sanitizeNumber(form.targetAlcoholPercent);
   const targetAlcoholLiters = finalBlendVolumeLiters * (targetAlcoholPercent / 100);
-
-  const rawAlcoholVolume = finalBlendVolumeLiters * (sanitizeNumber(form.alcoholAdditionPercent) / 100);
-  const otherLiquorVolume = finalBlendVolumeLiters * (sanitizeNumber(form.otherLiquorBlendPercent) / 100);
-  const fruitIngredientVolume = finalBlendVolumeLiters * (sanitizeNumber(form.fruitIngredientBlendPercent) / 100);
-
-  const rawAlcoholPure = rawAlcoholVolume * (sanitizeNumber(form.alcoholStrengthPercent) / 100);
-  const otherLiquorPure = otherLiquorVolume * (sanitizeNumber(form.otherLiquorAlcoholPercent) / 100);
-  const fruitIngredientPure = fruitIngredientVolume * (sanitizeNumber(form.fruitIngredientAlcoholPercent) / 100);
   const baseSakeAlcoholRate = sanitizeNumber(form.baseSakeAlcoholPercent) / 100;
+  const rawAlcoholRate = sanitizeNumber(form.alcoholStrengthPercent) / 100;
+  const otherLiquorRate = sanitizeNumber(form.otherLiquorAlcoholPercent) / 100;
 
-  const remainingAlcoholForGenshu = Math.max(targetAlcoholLiters - rawAlcoholPure - otherLiquorPure - fruitIngredientPure, 0);
-  const genshuVolume = baseSakeAlcoholRate > 0 ? remainingAlcoholForGenshu / baseSakeAlcoholRate : 0;
+  const fruitIngredientVolume = finalBlendVolumeLiters * (sanitizeNumber(form.fruitIngredientBlendPercent) / 100);
+  const fruitIngredientPure = fruitIngredientVolume * (sanitizeNumber(form.fruitIngredientAlcoholPercent) / 100);
+  const alcoholicTargetLiters = Math.max(targetAlcoholLiters - fruitIngredientPure, 0);
+
+  const contributionSeed = {
+    genshu: sanitizeNumber(form.genshuContributionPercent),
+    rawAlcohol: sanitizeNumber(form.alcoholContributionPercent),
+    otherLiquor: sanitizeNumber(form.otherLiquorContributionPercent)
+  };
+  const contributionSum = contributionSeed.genshu + contributionSeed.rawAlcohol + contributionSeed.otherLiquor;
+  const normalizedContribution =
+    contributionSum > 0
+      ? {
+          genshu: contributionSeed.genshu / contributionSum,
+          rawAlcohol: contributionSeed.rawAlcohol / contributionSum,
+          otherLiquor: contributionSeed.otherLiquor / contributionSum
+        }
+      : {
+          genshu: 1,
+          rawAlcohol: 0,
+          otherLiquor: 0
+        };
+
+  const genshuPureTarget = alcoholicTargetLiters * normalizedContribution.genshu;
+  const rawAlcoholPure = alcoholicTargetLiters * normalizedContribution.rawAlcohol;
+  const otherLiquorPure = alcoholicTargetLiters * normalizedContribution.otherLiquor;
+
+  const genshuVolume = baseSakeAlcoholRate > 0 ? genshuPureTarget / baseSakeAlcoholRate : 0;
+  const rawAlcoholVolume = rawAlcoholRate > 0 ? rawAlcoholPure / rawAlcoholRate : 0;
+  const otherLiquorVolume = otherLiquorRate > 0 ? otherLiquorPure / otherLiquorRate : 0;
   const dilutionWaterVolume = Math.max(finalBlendVolumeLiters - genshuVolume - rawAlcoholVolume - otherLiquorVolume - fruitIngredientVolume, 0);
   const preDilutionVolume = genshuVolume + rawAlcoholVolume + otherLiquorVolume + fruitIngredientVolume;
 
@@ -276,6 +300,7 @@ function calculateQuote(form) {
   const assumptions = [
     `酒類区分は ${categoryLabels[form.taxCategory] ?? "リキュール"} として酒税を算定。税率は ${formatCurrency(liquorTaxRatePerKl)} / kl。`,
     `出荷予定量 ${formatQuantity(roundQuantity(requestedShipmentVolumeLiters))} L に対し、歩留まりロス ${formatQuantity(cappedLossRate)}% を見込んで製造必要量 ${formatQuantity(roundQuantity(productionVolumeLiters))} L を算定しています。`,
+    `純アルコール寄与率は 原酒 ${formatQuantity(contributionSeed.genshu)}%、原料用アルコール ${formatQuantity(contributionSeed.rawAlcohol)}%、${form.otherLiquorName || "ブレンド酒"} ${formatQuantity(contributionSeed.otherLiquor)}% として正規化しています。`,
     `目標度数 ${formatQuantity(targetAlcoholPercent)}% に対し、必要原酒量は ${formatQuantity(roundQuantity(genshuVolume))} L、加水量は ${formatQuantity(roundQuantity(dilutionWaterVolume))} L。`,
     `原料用アルコール ${formatQuantity(roundQuantity(rawAlcoholVolume))} L、${form.otherLiquorName || "ブレンド酒"} ${formatQuantity(roundQuantity(otherLiquorVolume))} L、${form.fruitIngredientName || "果汁等"} ${formatQuantity(roundQuantity(fruitIngredientVolume))} L を配合。`,
     `出荷想定本数 ${formatQuantity(bottleCount)} 本、出荷量 ${formatQuantity(roundQuantity(orderedVolumeLiters))} L、想定ロット数 ${formatQuantity(roundQuantity(lotCount))} ロット。`,
@@ -286,7 +311,19 @@ function calculateQuote(form) {
   ];
 
   if (preDilutionVolume > finalBlendVolumeLiters + 0.01) {
-    assumptions.unshift("注意: 原酒と添加物だけで最終液量を超えています。配合比率か度数条件を見直してください。");
+    assumptions.unshift("注意: 原酒と添加物だけで最終液量を超えています。寄与率か度数条件を見直してください。");
+  }
+
+  if (contributionSeed.genshu > 0 && baseSakeAlcoholRate <= 0) {
+    assumptions.unshift("注意: 原酒の寄与率を入れていますが、原酒度数が 0% です。");
+  }
+
+  if (contributionSeed.rawAlcohol > 0 && rawAlcoholRate <= 0) {
+    assumptions.unshift("注意: 原料用アルコールの寄与率を入れていますが、原料用アルコール度数が 0% です。");
+  }
+
+  if (contributionSeed.otherLiquor > 0 && otherLiquorRate <= 0) {
+    assumptions.unshift(`注意: ${form.otherLiquorName || "ブレンド酒"} の寄与率を入れていますが、度数が 0% です。`);
   }
 
   if (shipmentGapLiters > 0.01) {
@@ -294,7 +331,7 @@ function calculateQuote(form) {
   }
 
   if (Math.abs(estimatedAlcoholPercent - targetAlcoholPercent) > 0.3) {
-    assumptions.unshift("注意: 推定度数が目標度数からずれています。原酒度数か配合比率を見直してください。");
+    assumptions.unshift("注意: 推定度数が目標度数からずれています。原酒度数か寄与率を見直してください。");
   }
 
   if (form.leadTime) {
@@ -478,6 +515,9 @@ function exportCsv() {
     ["planned_brew_volume_liters", result.plannedBrewVolumeLiters],
     ["production_volume_liters", result.productionVolumeLiters],
     ["loss_volume_liters", result.lossVolumeLiters],
+    ["genshu_contribution_percent", formState.genshuContributionPercent],
+    ["raw_alcohol_contribution_percent", formState.alcoholContributionPercent],
+    ["other_liquor_contribution_percent", formState.otherLiquorContributionPercent],
     ["genshu_volume_liters", result.genshuVolume],
     ["dilution_water_volume_liters", result.dilutionWaterVolume],
     ["raw_alcohol_volume_liters", result.rawAlcoholVolume],
