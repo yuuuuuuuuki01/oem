@@ -27,7 +27,8 @@
         <section class="sidebar-panel">
           <p class="eyebrow">できること</p>
           <ul>
-            <li>米単価、精米歩合、歩留まりから酒液原価を自動算出</li>
+            <li>加水後の仕込み予定量から必要な原酒量と加水量を逆算</li>
+            <li>米単価、精米歩合、原酒量から酒液原価を自動算出</li>
             <li>原料用アルコールやその他副資材を酒液原価に反映</li>
             <li>醸造日数、人員数、設備・資材利用費から期間コストを算定</li>
             <li>包装費、固定費、利益率、消費税まで含めて見積化</li>
@@ -38,9 +39,9 @@
       <main class="main">
         <section class="hero">
           <p class="eyebrow">Quotation Workspace</p>
-          <h2>仕込予定量と度数、原料構成まで含めて、日本酒OEMの酒液原価を組み立てる。</h2>
+          <h2>加水後の仕込み予定量から原酒量を逆算して、日本酒OEMの原価を組み立てる。</h2>
           <p class="hero-copy">
-            酒液原価/L を手入力するのではなく、原材料、原料用アルコール、ブレンド酒、製造期間起点で見積を組み立てます。包装費や固定費、利益率もそのまま全体見積へ反映します。
+            酒液原価/L を手入力するのではなく、原酒量、加水量、原材料、原料用アルコール、ブレンド酒、製造期間起点で見積を組み立てます。包装費や固定費、利益率もそのまま全体見積へ反映します。
           </p>
           <div class="hero-actions">
             <button id="download-csv" class="button">CSV出力</button>
@@ -158,8 +159,9 @@
             <div class="form-grid">
               <div class="subsection-title full-span">酒液製造条件</div>
               <label class="field">
-                <span>仕込予定量 (L)</span>
+                <span>仕込み予定量 (L・加水後)</span>
                 <input type="number" data-field="plannedBrewVolumeLiters" min="0" step="1" />
+                <small class="field-hint">加水とブレンドを終えた後の最終液量として扱います。</small>
               </label>
               <label class="field">
                 <span>玄米単価 (円/kg)</span>
