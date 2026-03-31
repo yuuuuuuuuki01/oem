@@ -335,6 +335,31 @@ input[readonly] {
   border-collapse: collapse;
 }
 
+.band-table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+}
+
+.band-table th,
+.band-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.band-table th {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.band-table input {
+  min-width: 88px;
+}
+
 .quote-table th,
 .quote-table td {
   padding: 14px 8px;

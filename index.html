@@ -341,7 +341,93 @@
               </div>
             </div>
 
-            <div class="subsection-title">包装・出荷</div>
+            <div class="subsection-title">容量帯別単価</div>
+            <p class="field-hint">
+              5つまで容量帯を設定できます。現在の瓶サイズに一致した帯の単価を自動で使い、一致しないときだけ下の共通単価を使います。
+            </p>
+            <div class="table-wrap">
+              <table class="band-table">
+                <thead>
+                  <tr>
+                    <th>帯</th>
+                    <th>最小ml</th>
+                    <th>最大ml</th>
+                    <th>瓶</th>
+                    <th>キャップ</th>
+                    <th>ラベル</th>
+                    <th>箱</th>
+                    <th>充填</th>
+                    <th>検査</th>
+                    <th>物流</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>帯1</td>
+                    <td><input type="number" data-field="packagingBand1MinMl" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand1MaxMl" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand1BottleCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand1CapCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand1LabelCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand1CartonCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand1FillingCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand1QaCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand1LogisticsCostPerBottle" min="0" step="1" /></td>
+                  </tr>
+                  <tr>
+                    <td>帯2</td>
+                    <td><input type="number" data-field="packagingBand2MinMl" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand2MaxMl" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand2BottleCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand2CapCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand2LabelCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand2CartonCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand2FillingCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand2QaCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand2LogisticsCostPerBottle" min="0" step="1" /></td>
+                  </tr>
+                  <tr>
+                    <td>帯3</td>
+                    <td><input type="number" data-field="packagingBand3MinMl" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand3MaxMl" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand3BottleCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand3CapCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand3LabelCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand3CartonCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand3FillingCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand3QaCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand3LogisticsCostPerBottle" min="0" step="1" /></td>
+                  </tr>
+                  <tr>
+                    <td>帯4</td>
+                    <td><input type="number" data-field="packagingBand4MinMl" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand4MaxMl" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand4BottleCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand4CapCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand4LabelCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand4CartonCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand4FillingCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand4QaCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand4LogisticsCostPerBottle" min="0" step="1" /></td>
+                  </tr>
+                  <tr>
+                    <td>帯5</td>
+                    <td><input type="number" data-field="packagingBand5MinMl" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand5MaxMl" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand5BottleCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand5CapCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand5LabelCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand5CartonCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand5FillingCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand5QaCostPerBottle" min="0" step="1" /></td>
+                    <td><input type="number" data-field="packagingBand5LogisticsCostPerBottle" min="0" step="1" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="field-hint" id="active-packaging-band">適用容量帯: -</p>
+
+            <div class="subsection-title">共通単価（容量帯未一致時）</div>
             <div class="form-grid">
               <label class="field">
                 <span>瓶 (円/本)</span>

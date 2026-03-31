@@ -49,12 +49,82 @@ const categoryLabels = {
   spirits: "スピリッツ"
 };
 
+const PACKAGING_BAND_COUNT = 5;
+const packagingCostKeys = [
+  "bottleCostPerBottle",
+  "capCostPerBottle",
+  "labelCostPerBottle",
+  "cartonCostPerBottle",
+  "fillingCostPerBottle",
+  "qaCostPerBottle",
+  "logisticsCostPerBottle"
+];
+
+for (let bandIndex = 1; bandIndex <= PACKAGING_BAND_COUNT; bandIndex += 1) {
+  numericFields.add(`packagingBand${bandIndex}MinMl`);
+  numericFields.add(`packagingBand${bandIndex}MaxMl`);
+
+  for (const key of packagingCostKeys) {
+    numericFields.add(`packagingBand${bandIndex}${key[0].toUpperCase()}${key.slice(1)}`);
+  }
+}
+
 function todayString() {
   return new Date().toISOString().slice(0, 10);
 }
 
 function defaultQuoteNumber() {
   return `OEM-${todayString().replaceAll("-", "")}-001`;
+}
+
+function createPackagingBandDefaults() {
+  return {
+    packagingBand1MinMl: 180,
+    packagingBand1MaxMl: 300,
+    packagingBand1BottleCostPerBottle: 64,
+    packagingBand1CapCostPerBottle: 14,
+    packagingBand1LabelCostPerBottle: 18,
+    packagingBand1CartonCostPerBottle: 40,
+    packagingBand1FillingCostPerBottle: 34,
+    packagingBand1QaCostPerBottle: 14,
+    packagingBand1LogisticsCostPerBottle: 20,
+    packagingBand2MinMl: 301,
+    packagingBand2MaxMl: 500,
+    packagingBand2BottleCostPerBottle: 78,
+    packagingBand2CapCostPerBottle: 16,
+    packagingBand2LabelCostPerBottle: 21,
+    packagingBand2CartonCostPerBottle: 52,
+    packagingBand2FillingCostPerBottle: 40,
+    packagingBand2QaCostPerBottle: 17,
+    packagingBand2LogisticsCostPerBottle: 24,
+    packagingBand3MinMl: 501,
+    packagingBand3MaxMl: 720,
+    packagingBand3BottleCostPerBottle: 92,
+    packagingBand3CapCostPerBottle: 18,
+    packagingBand3LabelCostPerBottle: 24,
+    packagingBand3CartonCostPerBottle: 65,
+    packagingBand3FillingCostPerBottle: 48,
+    packagingBand3QaCostPerBottle: 20,
+    packagingBand3LogisticsCostPerBottle: 28,
+    packagingBand4MinMl: 721,
+    packagingBand4MaxMl: 900,
+    packagingBand4BottleCostPerBottle: 108,
+    packagingBand4CapCostPerBottle: 20,
+    packagingBand4LabelCostPerBottle: 28,
+    packagingBand4CartonCostPerBottle: 78,
+    packagingBand4FillingCostPerBottle: 54,
+    packagingBand4QaCostPerBottle: 23,
+    packagingBand4LogisticsCostPerBottle: 33,
+    packagingBand5MinMl: 901,
+    packagingBand5MaxMl: 1800,
+    packagingBand5BottleCostPerBottle: 132,
+    packagingBand5CapCostPerBottle: 24,
+    packagingBand5LabelCostPerBottle: 32,
+    packagingBand5CartonCostPerBottle: 96,
+    packagingBand5FillingCostPerBottle: 68,
+    packagingBand5QaCostPerBottle: 28,
+    packagingBand5LogisticsCostPerBottle: 40
+  };
 }
 
 function createDefaultForm() {
@@ -94,6 +164,7 @@ function createDefaultForm() {
     staffCount: 3,
     laborCostPerPersonDay: 18000,
     facilityUtilityCostPerLiter: 45,
+    ...createPackagingBandDefaults(),
     bottleCostPerBottle: 92,
     capCostPerBottle: 18,
     labelCostPerBottle: 24,
@@ -148,6 +219,45 @@ function createLineItem(label, unit, quantity, unitPrice, category) {
     unitPrice: roundCurrency(safeUnitPrice),
     total: roundCurrency(safeQuantity * safeUnitPrice),
     category
+  };
+}
+
+function getPackagingBandCostFieldName(bandIndex, costKey) {
+  return `packagingBand${bandIndex}${costKey[0].toUpperCase()}${costKey.slice(1)}`;
+}
+
+function getAppliedPackagingRates(form, bottleSizeMl) {
+  for (let bandIndex = 1; bandIndex <= PACKAGING_BAND_COUNT; bandIndex += 1) {
+    const minMl = sanitizeNumber(form[`packagingBand${bandIndex}MinMl`]);
+    const maxMl = sanitizeNumber(form[`packagingBand${bandIndex}MaxMl`]);
+
+    if (maxMl <= 0 || maxMl < minMl) {
+      continue;
+    }
+
+    if (bottleSizeMl >= minMl && bottleSizeMl <= maxMl) {
+      const rates = Object.fromEntries(
+        packagingCostKeys.map((key) => [key, sanitizeNumber(form[getPackagingBandCostFieldName(bandIndex, key)])])
+      );
+
+      return {
+        bandIndex,
+        label: `容量帯${bandIndex} (${formatQuantity(minMl)}-${formatQuantity(maxMl)}ml)`,
+        minMl,
+        maxMl,
+        rates,
+        usesBand: true
+      };
+    }
+  }
+
+  return {
+    bandIndex: 0,
+    label: "共通単価",
+    minMl: 0,
+    maxMl: 0,
+    rates: Object.fromEntries(packagingCostKeys.map((key) => [key, sanitizeNumber(form[key])])),
+    usesBand: false
   };
 }
 
@@ -231,6 +341,7 @@ function calculateQuote(form) {
   const bottleCount = requestedBottleCount;
   const lotCount = sanitizeNumber(form.bottlesPerLot) > 0 ? bottleCount / sanitizeNumber(form.bottlesPerLot) : 0;
   const shipmentGapLiters = requestedShipmentVolumeLiters - orderedVolumeLiters;
+  const appliedPackaging = getAppliedPackagingRates(form, bottleSizeMl);
 
   const litersPerKgWhiteRice = sanitizeNumber(form.litersPerKgWhiteRice);
   const whiteRiceKg = litersPerKgWhiteRice > 0 ? genshuVolume / litersPerKgWhiteRice : 0;
@@ -268,13 +379,13 @@ function calculateQuote(form) {
     createLineItem("人件費", "人日", laborPersonDays, form.laborCostPerPersonDay, "製造経費"),
     createLineItem("設備・ユーティリティ費", "L", genshuVolume, form.facilityUtilityCostPerLiter, "製造経費"),
     createLineItem("酒税", "kl", taxableVolumeLiters / 1000, liquorTaxRatePerKl, "税金"),
-    createLineItem("瓶", "本", bottleCount, form.bottleCostPerBottle, "包装・出荷"),
-    createLineItem("キャップ・栓", "本", bottleCount, form.capCostPerBottle, "包装・出荷"),
-    createLineItem("ラベル", "本", bottleCount, form.labelCostPerBottle, "包装・出荷"),
-    createLineItem("箱・梱包", "本", bottleCount, form.cartonCostPerBottle, "包装・出荷"),
-    createLineItem("充填・火入れ", "本", bottleCount, form.fillingCostPerBottle, "包装・出荷"),
-    createLineItem("品質検査", "本", bottleCount, form.qaCostPerBottle, "包装・出荷"),
-    createLineItem("保管・物流", "本", bottleCount, form.logisticsCostPerBottle, "包装・出荷"),
+    createLineItem("瓶", "本", bottleCount, appliedPackaging.rates.bottleCostPerBottle, "包装・出荷"),
+    createLineItem("キャップ・栓", "本", bottleCount, appliedPackaging.rates.capCostPerBottle, "包装・出荷"),
+    createLineItem("ラベル", "本", bottleCount, appliedPackaging.rates.labelCostPerBottle, "包装・出荷"),
+    createLineItem("箱・梱包", "本", bottleCount, appliedPackaging.rates.cartonCostPerBottle, "包装・出荷"),
+    createLineItem("充填・火入れ", "本", bottleCount, appliedPackaging.rates.fillingCostPerBottle, "包装・出荷"),
+    createLineItem("品質検査", "本", bottleCount, appliedPackaging.rates.qaCostPerBottle, "包装・出荷"),
+    createLineItem("保管・物流", "本", bottleCount, appliedPackaging.rates.logisticsCostPerBottle, "包装・出荷"),
     createLineItem("試作・レシピ調整", "式", 1, form.developmentFee, "固定費"),
     createLineItem("表示・デザイン調整", "式", 1, form.designFee, "固定費"),
     createLineItem("進行管理・申請対応", "式", 1, form.adminFee, "固定費"),
@@ -304,6 +415,7 @@ function calculateQuote(form) {
     `目標度数 ${formatQuantity(targetAlcoholPercent)}% に対し、必要原酒量は ${formatQuantity(roundQuantity(genshuVolume))} L、加水量は ${formatQuantity(roundQuantity(dilutionWaterVolume))} L。`,
     `原料用アルコール ${formatQuantity(roundQuantity(rawAlcoholVolume))} L、${form.otherLiquorName || "ブレンド酒"} ${formatQuantity(roundQuantity(otherLiquorVolume))} L、${form.fruitIngredientName || "果汁等"} ${formatQuantity(roundQuantity(fruitIngredientVolume))} L を配合。`,
     `出荷想定本数 ${formatQuantity(bottleCount)} 本、出荷量 ${formatQuantity(roundQuantity(orderedVolumeLiters))} L、想定ロット数 ${formatQuantity(roundQuantity(lotCount))} ロット。`,
+    `${formatQuantity(bottleSizeMl)}ml は ${appliedPackaging.label} の包装単価を使用しています。`,
     `白米使用量 ${formatQuantity(roundQuantity(whiteRiceKg))} kg、玄米調達量 ${formatQuantity(roundQuantity(brownRiceKg))} kg、麹米 ${formatQuantity(roundQuantity(kojiRiceKg))} kg、掛米 ${formatQuantity(roundQuantity(kakemaiKg))} kg。`,
     `酒液原価は ${formatCurrency(derivedLiquidCostPerLiter)} / L。ロス込みの製造原価を出荷量で割り戻しています。`,
     `醸造期間 ${formatQuantity(sanitizeNumber(form.brewingDays))} 日、人日 ${formatQuantity(roundQuantity(laborPersonDays))} で算定。`,
@@ -370,6 +482,8 @@ function calculateQuote(form) {
     liquorTaxRatePerKl: roundCurrency(liquorTaxRatePerKl),
     liquorTaxAmount,
     derivedLiquidCostPerLiter: roundCurrency(derivedLiquidCostPerLiter),
+    appliedPackagingLabel: appliedPackaging.label,
+    appliedPackagingUsesBand: appliedPackaging.usesBand,
     costSubtotal,
     marginAmount,
     quoteSubtotal,
@@ -459,6 +573,8 @@ function render() {
   document.getElementById("preview-project").textContent = formState.projectName || "案件名未入力";
   document.getElementById("preview-product").textContent =
     `${formState.productName || "製品名未入力"} / ${formState.sakeType || "酒質未入力"} / ${categoryLabels[formState.taxCategory] ?? "リキュール"}`;
+  document.getElementById("active-packaging-band").textContent =
+    `適用容量帯: ${result.appliedPackagingLabel}${result.appliedPackagingUsesBand ? "" : "（共通単価を使用）"}`;
   document.getElementById("preview-liquid-manufacturing-cost").textContent = formatCurrency(result.liquidManufacturingCost);
   document.getElementById("preview-liquor-tax").textContent = formatCurrency(result.liquorTaxAmount);
   document.getElementById("preview-cost-subtotal").textContent = formatCurrency(result.costSubtotal);
@@ -515,6 +631,7 @@ function exportCsv() {
     ["planned_brew_volume_liters", result.plannedBrewVolumeLiters],
     ["production_volume_liters", result.productionVolumeLiters],
     ["loss_volume_liters", result.lossVolumeLiters],
+    ["applied_packaging_band", csvCell(result.appliedPackagingLabel)],
     ["genshu_contribution_percent", formState.genshuContributionPercent],
     ["raw_alcohol_contribution_percent", formState.alcoholContributionPercent],
     ["other_liquor_contribution_percent", formState.otherLiquorContributionPercent],
