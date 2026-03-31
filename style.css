@@ -30,7 +30,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
@@ -182,7 +183,8 @@ a {
 .content-grid,
 .form-grid,
 .tag-row,
-.notes-stack {
+.notes-stack,
+.calc-grid {
   display: grid;
   gap: 16px;
 }
@@ -194,7 +196,7 @@ a {
 }
 
 .summary-grid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .summary-card {
@@ -243,8 +245,13 @@ a {
   line-height: 1.5;
 }
 
+.calc-caption {
+  margin: 0 0 16px;
+}
+
 .subsection-title {
-  padding-top: 8px;
+  margin-bottom: 14px;
+  padding-top: 12px;
   border-top: 1px solid var(--line);
   color: var(--accent-2);
   font-size: 13px;
@@ -258,7 +265,8 @@ a {
 }
 
 input,
-textarea {
+textarea,
+select {
   width: 100%;
   border: 1px solid rgba(55, 37, 22, 0.16);
   background: white;
@@ -305,6 +313,21 @@ input[readonly] {
 
 .table-wrap {
   overflow-x: auto;
+}
+
+.calc-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.calc-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(31, 77, 99, 0.06), rgba(141, 61, 19, 0.08));
+}
+
+.calc-card strong {
+  font-size: 24px;
 }
 
 .quote-table {
@@ -398,7 +421,8 @@ input[readonly] {
   .summary-grid,
   .content-grid,
   .form-grid,
-  .tag-row {
+  .tag-row,
+  .calc-grid {
     grid-template-columns: 1fr;
   }
 
