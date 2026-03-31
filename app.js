@@ -1,4 +1,4 @@
-const STORAGE_KEY = "sake-oem-quote-form-v3";
+const STORAGE_KEY = "sake-oem-quote-form-v4";
 
 const numericFields = new Set([
   "targetAlcoholPercent",
@@ -176,7 +176,17 @@ function getLiquorTaxRatePerKl(category, abv) {
 }
 
 function calculateQuote(form) {
-  const finalBlendVolumeLiters = sanitizeNumber(form.plannedBrewVolumeLiters);
+  const requestedShipmentVolumeLiters = sanitizeNumber(form.plannedBrewVolumeLiters);
+  const cappedLossRate = Math.min(sanitizeNumber(form.expectedLossRate), 95);
+  const yieldRate = 1 - cappedLossRate / 100;
+  const bottleSizeMl = sanitizeNumber(form.bottleSizeMl);
+  const requestedBottleCount = bottleSizeMl > 0 ? Math.floor((requestedShipmentVolumeLiters * 1000) / bottleSizeMl) : 0;
+  const orderedVolumeLiters = bottleSizeMl > 0 ? (requestedBottleCount * bottleSizeMl) / 1000 : requestedShipmentVolumeLiters;
+  const taxableVolumeLiters = orderedVolumeLiters > 0 ? orderedVolumeLiters : requestedShipmentVolumeLiters;
+  const productionVolumeLiters = yieldRate > 0 ? taxableVolumeLiters / yieldRate : taxableVolumeLiters;
+  const lossVolumeLiters = Math.max(productionVolumeLiters - taxableVolumeLiters, 0);
+
+  const finalBlendVolumeLiters = productionVolumeLiters;
   const targetAlcoholPercent = sanitizeNumber(form.targetAlcoholPercent);
   const targetAlcoholLiters = finalBlendVolumeLiters * (targetAlcoholPercent / 100);
 
@@ -194,15 +204,9 @@ function calculateQuote(form) {
   const dilutionWaterVolume = Math.max(finalBlendVolumeLiters - genshuVolume - rawAlcoholVolume - otherLiquorVolume - fruitIngredientVolume, 0);
   const preDilutionVolume = genshuVolume + rawAlcoholVolume + otherLiquorVolume + fruitIngredientVolume;
 
-  const cappedLossRate = Math.min(sanitizeNumber(form.expectedLossRate), 95);
-  const yieldRate = 1 - cappedLossRate / 100;
-  const bottlableVolumeLiters = finalBlendVolumeLiters * yieldRate;
-  const bottleSizeMl = sanitizeNumber(form.bottleSizeMl);
-  const bottleCount = bottleSizeMl > 0 ? Math.floor((bottlableVolumeLiters * 1000) / bottleSizeMl) : 0;
-  const orderedVolumeLiters = (bottleCount * bottleSizeMl) / 1000;
+  const bottleCount = requestedBottleCount;
   const lotCount = sanitizeNumber(form.bottlesPerLot) > 0 ? bottleCount / sanitizeNumber(form.bottlesPerLot) : 0;
-  const requiredVolumeLiters = yieldRate > 0 ? orderedVolumeLiters / yieldRate : orderedVolumeLiters;
-  const productionGapLiters = finalBlendVolumeLiters - requiredVolumeLiters;
+  const shipmentGapLiters = requestedShipmentVolumeLiters - orderedVolumeLiters;
 
   const litersPerKgWhiteRice = sanitizeNumber(form.litersPerKgWhiteRice);
   const whiteRiceKg = litersPerKgWhiteRice > 0 ? genshuVolume / litersPerKgWhiteRice : 0;
@@ -224,12 +228,12 @@ function calculateQuote(form) {
   const liquidManufacturingCost = roundCurrency(
     riceCost + alcoholCost + otherLiquorCost + fruitIngredientCost + otherRawMaterialCost + laborCost + facilityCost
   );
-  const derivedLiquidCostPerLiter = finalBlendVolumeLiters > 0 ? liquidManufacturingCost / finalBlendVolumeLiters : 0;
+  const derivedLiquidCostPerLiter = taxableVolumeLiters > 0 ? liquidManufacturingCost / taxableVolumeLiters : 0;
   const pureAlcoholLiters = genshuVolume * baseSakeAlcoholRate + rawAlcoholPure + otherLiquorPure + fruitIngredientPure;
   const estimatedAlcoholPercent = finalBlendVolumeLiters > 0 ? (pureAlcoholLiters / finalBlendVolumeLiters) * 100 : 0;
 
   const liquorTaxRatePerKl = getLiquorTaxRatePerKl(form.taxCategory, estimatedAlcoholPercent);
-  const liquorTaxAmount = roundCurrency((liquorTaxRatePerKl / 1000) * finalBlendVolumeLiters);
+  const liquorTaxAmount = roundCurrency((liquorTaxRatePerKl / 1000) * taxableVolumeLiters);
 
   const lineItems = [
     createLineItem("玄米原料", "kg", brownRiceKg, form.brownRiceCostPerKg, "原酒原材料"),
@@ -239,7 +243,7 @@ function calculateQuote(form) {
     createLineItem("その他原材料", "L", genshuVolume, form.otherRawMaterialCostPerLiter, "原酒原材料"),
     createLineItem("人件費", "人日", laborPersonDays, form.laborCostPerPersonDay, "製造経費"),
     createLineItem("設備・ユーティリティ費", "L", genshuVolume, form.facilityUtilityCostPerLiter, "製造経費"),
-    createLineItem("酒税", "kl", finalBlendVolumeLiters / 1000, liquorTaxRatePerKl, "税金"),
+    createLineItem("酒税", "kl", taxableVolumeLiters / 1000, liquorTaxRatePerKl, "税金"),
     createLineItem("瓶", "本", bottleCount, form.bottleCostPerBottle, "包装・出荷"),
     createLineItem("キャップ・栓", "本", bottleCount, form.capCostPerBottle, "包装・出荷"),
     createLineItem("ラベル", "本", bottleCount, form.labelCostPerBottle, "包装・出荷"),
@@ -271,12 +275,12 @@ function calculateQuote(form) {
 
   const assumptions = [
     `酒類区分は ${categoryLabels[form.taxCategory] ?? "リキュール"} として酒税を算定。税率は ${formatCurrency(liquorTaxRatePerKl)} / kl。`,
-    `仕込み予定量 ${formatQuantity(roundQuantity(finalBlendVolumeLiters))} L は加水後の最終液量として扱っています。`,
+    `出荷予定量 ${formatQuantity(roundQuantity(requestedShipmentVolumeLiters))} L に対し、歩留まりロス ${formatQuantity(cappedLossRate)}% を見込んで製造必要量 ${formatQuantity(roundQuantity(productionVolumeLiters))} L を算定しています。`,
     `目標度数 ${formatQuantity(targetAlcoholPercent)}% に対し、必要原酒量は ${formatQuantity(roundQuantity(genshuVolume))} L、加水量は ${formatQuantity(roundQuantity(dilutionWaterVolume))} L。`,
     `原料用アルコール ${formatQuantity(roundQuantity(rawAlcoholVolume))} L、${form.otherLiquorName || "ブレンド酒"} ${formatQuantity(roundQuantity(otherLiquorVolume))} L、${form.fruitIngredientName || "果汁等"} ${formatQuantity(roundQuantity(fruitIngredientVolume))} L を配合。`,
-    `瓶詰可能本数 ${formatQuantity(bottleCount)} 本、想定ロット数 ${formatQuantity(roundQuantity(lotCount))} ロット。`,
+    `出荷想定本数 ${formatQuantity(bottleCount)} 本、出荷量 ${formatQuantity(roundQuantity(orderedVolumeLiters))} L、想定ロット数 ${formatQuantity(roundQuantity(lotCount))} ロット。`,
     `白米使用量 ${formatQuantity(roundQuantity(whiteRiceKg))} kg、玄米調達量 ${formatQuantity(roundQuantity(brownRiceKg))} kg、麹米 ${formatQuantity(roundQuantity(kojiRiceKg))} kg、掛米 ${formatQuantity(roundQuantity(kakemaiKg))} kg。`,
-    `酒液原価は ${formatCurrency(derivedLiquidCostPerLiter)} / L。米や副原料の原材料費は原酒量ベースで算定しています。`,
+    `酒液原価は ${formatCurrency(derivedLiquidCostPerLiter)} / L。ロス込みの製造原価を出荷量で割り戻しています。`,
     `醸造期間 ${formatQuantity(sanitizeNumber(form.brewingDays))} 日、人日 ${formatQuantity(roundQuantity(laborPersonDays))} で算定。`,
     `${formatQuantity(sanitizeNumber(form.taxRate))}% の消費税を加算。`
   ];
@@ -285,8 +289,8 @@ function calculateQuote(form) {
     assumptions.unshift("注意: 原酒と添加物だけで最終液量を超えています。配合比率か度数条件を見直してください。");
   }
 
-  if (productionGapLiters < 0) {
-    assumptions.unshift("注意: 仕込み予定量が歩留まり後の必要量を下回っています。");
+  if (shipmentGapLiters > 0.01) {
+    assumptions.unshift("注意: 容量換算の端数で、出荷予定量より実際の出荷量が少なくなっています。瓶容量か出荷予定量を調整してください。");
   }
 
   if (Math.abs(estimatedAlcoholPercent - targetAlcoholPercent) > 0.3) {
@@ -309,8 +313,10 @@ function calculateQuote(form) {
     bottleCount,
     lotCount: roundQuantity(lotCount),
     orderedVolumeLiters: roundQuantity(orderedVolumeLiters),
-    requiredVolumeLiters: roundQuantity(requiredVolumeLiters),
-    plannedBrewVolumeLiters: roundQuantity(finalBlendVolumeLiters),
+    requiredVolumeLiters: roundQuantity(productionVolumeLiters),
+    plannedBrewVolumeLiters: roundQuantity(requestedShipmentVolumeLiters),
+    productionVolumeLiters: roundQuantity(productionVolumeLiters),
+    lossVolumeLiters: roundQuantity(lossVolumeLiters),
     genshuVolume: roundQuantity(genshuVolume),
     dilutionWaterVolume: roundQuantity(dilutionWaterVolume),
     whiteRiceKg: roundQuantity(whiteRiceKg),
@@ -322,7 +328,7 @@ function calculateQuote(form) {
     fruitIngredientVolume: roundQuantity(fruitIngredientVolume),
     laborPersonDays: roundQuantity(laborPersonDays),
     estimatedAlcoholPercent: roundQuantity(estimatedAlcoholPercent),
-    productionGapLiters: roundQuantity(productionGapLiters),
+    productionGapLiters: roundQuantity(shipmentGapLiters),
     liquidManufacturingCost,
     liquorTaxRatePerKl: roundCurrency(liquorTaxRatePerKl),
     liquorTaxAmount,
@@ -403,6 +409,7 @@ function render() {
   document.getElementById("summary-brew-volume").textContent = `${formatQuantity(result.plannedBrewVolumeLiters)} L`;
   document.getElementById("summary-alcohol-percent").textContent = `${formatQuantity(sanitizeNumber(formState.targetAlcoholPercent))}% / ${formatQuantity(result.estimatedAlcoholPercent)}%`;
 
+  document.getElementById("calc-production-volume").textContent = `${formatQuantity(result.productionVolumeLiters)} L`;
   document.getElementById("calc-genshu-volume").textContent = `${formatQuantity(result.genshuVolume)} L`;
   document.getElementById("calc-water-volume").textContent = `${formatQuantity(result.dilutionWaterVolume)} L`;
   document.getElementById("calc-bottle-count").textContent = `${formatQuantity(result.bottleCount)} 本`;
@@ -425,9 +432,11 @@ function render() {
 
   document.getElementById("tag-bottle-count").textContent = `総本数 ${formatQuantity(result.bottleCount)} 本`;
   document.getElementById("tag-lot-count").textContent = `想定ロット数 ${formatQuantity(result.lotCount)}`;
+  document.getElementById("tag-production-volume").textContent = `製造必要量 ${formatQuantity(result.productionVolumeLiters)} L`;
   document.getElementById("tag-genshu-volume").textContent = `原酒量 ${formatQuantity(result.genshuVolume)} L`;
   document.getElementById("tag-water-volume").textContent = `加水量 ${formatQuantity(result.dilutionWaterVolume)} L`;
-  document.getElementById("tag-brew-volume").textContent = `仕込み予定量 ${formatQuantity(result.plannedBrewVolumeLiters)} L`;
+  document.getElementById("tag-brew-volume").textContent = `出荷予定量 ${formatQuantity(result.plannedBrewVolumeLiters)} L`;
+  document.getElementById("tag-loss-volume").textContent = `ロス見込 ${formatQuantity(result.lossVolumeLiters)} L`;
   document.getElementById("tag-tax-category").textContent = `酒類区分 ${categoryLabels[formState.taxCategory] ?? "-"}`;
   document.getElementById("tag-liquid-unit-cost").textContent = `酒液原価 ${formatCurrency(result.derivedLiquidCostPerLiter)} / L`;
   document.getElementById("tag-unit-bottle").textContent = `税抜単価 ${formatCurrency(result.unitPricePerBottle)} / 本`;
@@ -467,6 +476,8 @@ function exportCsv() {
     ["bottle_count", result.bottleCount],
     ["lot_count", result.lotCount],
     ["planned_brew_volume_liters", result.plannedBrewVolumeLiters],
+    ["production_volume_liters", result.productionVolumeLiters],
+    ["loss_volume_liters", result.lossVolumeLiters],
     ["genshu_volume_liters", result.genshuVolume],
     ["dilution_water_volume_liters", result.dilutionWaterVolume],
     ["raw_alcohol_volume_liters", result.rawAlcoholVolume],

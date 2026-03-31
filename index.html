@@ -72,9 +72,9 @@
             <p class="muted">原酒ベースの原価を反映</p>
           </article>
           <article class="summary-card">
-            <p class="eyebrow">仕込み予定量</p>
+            <p class="eyebrow">出荷予定量</p>
             <p class="summary-value" id="summary-brew-volume">0 L</p>
-            <p class="muted">加水後の最終液量</p>
+            <p class="muted">納品したい加水後数量</p>
           </article>
           <article class="summary-card">
             <p class="eyebrow">アルコール度数</p>
@@ -154,9 +154,9 @@
                 <input type="number" data-field="expectedLossRate" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>仕込み予定量 (L・加水後)</span>
+                <span>出荷予定量 (L・加水後)</span>
                 <input type="number" data-field="plannedBrewVolumeLiters" min="0" step="1" />
-                <small class="field-hint">加水とブレンド後の最終液量です。</small>
+                <small class="field-hint">納品したい最終液量です。ロス込みの製造量は自動で上乗せします。</small>
               </label>
               <label class="field">
                 <span>納期目安</span>
@@ -236,9 +236,13 @@
 
             <div class="subsection-title">自動計算結果</div>
             <p class="field-hint calc-caption">
-              仕込み予定量は加水後の最終液量として扱い、目標度数に合うよう原酒量と加水量を逆算します。酒税は酒類区分と推定度数から自動算定します。
+              出荷予定量を基準に、歩留まりロスを見込んだ製造必要量を先に算定し、その量に対して原酒量と加水量を逆算します。酒税は出荷量ベースで自動算定します。
             </p>
             <div class="calc-grid">
+              <article class="calc-card">
+                <p class="eyebrow">製造必要量</p>
+                <strong id="calc-production-volume">0 L</strong>
+              </article>
               <article class="calc-card">
                 <p class="eyebrow">必要原酒量</p>
                 <strong id="calc-genshu-volume">0 L</strong>
@@ -490,9 +494,11 @@
             <div class="tag-row">
               <span class="tag" id="tag-bottle-count">総本数 0 本</span>
               <span class="tag" id="tag-lot-count">想定ロット数 0</span>
+              <span class="tag" id="tag-production-volume">製造必要量 0 L</span>
               <span class="tag" id="tag-genshu-volume">原酒量 0 L</span>
               <span class="tag" id="tag-water-volume">加水量 0 L</span>
-              <span class="tag" id="tag-brew-volume">仕込み予定量 0 L</span>
+              <span class="tag" id="tag-brew-volume">出荷予定量 0 L</span>
+              <span class="tag" id="tag-loss-volume">ロス見込 0 L</span>
               <span class="tag" id="tag-tax-category">酒類区分 -</span>
               <span class="tag" id="tag-liquid-unit-cost">酒液原価 0 / L</span>
               <span class="tag" id="tag-unit-bottle">税抜単価 0 / 本</span>
