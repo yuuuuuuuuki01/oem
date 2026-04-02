@@ -309,12 +309,20 @@
           
           <div class="lcd-metrics">
             <div class="metric">
-              <span class="metric-label">UNIT PRICE</span>
-              <span class="metric-val" id="summary-unit-bottle">¥0</span>
+              <span class="metric-label">COST / BOTTLE</span>
+              <span class="metric-val" id="summary-cost-unit-bottle">¥0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">QUOTE / BOTTLE</span>
+              <span class="metric-val" id="summary-quote-unit-bottle">¥0</span>
             </div>
             <div class="metric">
               <span class="metric-label">COST / LITER</span>
-              <span class="metric-val" id="summary-liquid-unit-cost">¥0</span>
+              <span class="metric-val" id="summary-cost-unit-liter">¥0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">QUOTE / LITER</span>
+              <span class="metric-val" id="summary-quote-unit-liter">¥0</span>
             </div>
             <div class="metric">
               <span class="metric-label">VOLUME</span>
@@ -406,12 +414,28 @@
                   <strong id="preview-cost-subtotal">¥0</strong>
                 </div>
                 <div class="total-row">
+                  <span>原価単価 / 本</span>
+                  <strong id="preview-cost-unit-bottle">¥0</strong>
+                </div>
+                <div class="total-row">
+                  <span>原価単価 / L</span>
+                  <strong id="preview-cost-unit-liter">¥0</strong>
+                </div>
+                <div class="total-row">
                   <span>利益</span>
                   <strong id="preview-margin-amount">¥0</strong>
                 </div>
                 <div class="total-row">
                   <span>見積金額 <span class="unit-hint">(税抜)</span></span>
                   <strong id="preview-quote-subtotal">¥0</strong>
+                </div>
+                <div class="total-row">
+                  <span>見積単価 / 本 <span class="unit-hint">(税抜)</span></span>
+                  <strong id="preview-quote-unit-bottle">¥0</strong>
+                </div>
+                <div class="total-row">
+                  <span>見積単価 / L <span class="unit-hint">(税抜)</span></span>
+                  <strong id="preview-quote-unit-liter">¥0</strong>
                 </div>
                 <div class="total-row">
                   <span>消費税</span>
@@ -464,8 +488,10 @@
               <span class="tag" id="tag-brew-volume">出荷予定量 0 L</span>
               <span class="tag" id="tag-loss-volume">ロス見込 0 L</span>
               <span class="tag" id="tag-tax-category">酒類区分 -</span>
-              <span class="tag" id="tag-liquid-unit-cost">酒液原価 0 / L</span>
-              <span class="tag" id="tag-unit-bottle">税抜単価 0 / 本</span>
+              <span class="tag" id="tag-cost-unit-liter">原価単価 0 / L</span>
+              <span class="tag" id="tag-cost-unit-bottle">原価単価 0 / 本</span>
+              <span class="tag" id="tag-quote-unit-liter">見積単価 0 / L</span>
+              <span class="tag" id="tag-quote-unit-bottle">見積単価 0 / 本</span>
               <span class="tag" id="tag-white-rice">白米使用量 0 kg</span>
               <span class="tag" id="tag-person-days">人日 0</span>
               <span class="tag" id="tag-alcohol-percent">推定度数 0%</span>

@@ -437,7 +437,10 @@ function calculateQuote(form) {
   const quoteSubtotal = costSubtotal + marginAmount;
   const taxAmount = roundCurrency(quoteSubtotal * (sanitizeNumber(form.taxRate) / 100));
   const quoteTotal = quoteSubtotal + taxAmount;
+  const costUnitPricePerBottle = bottleCount > 0 ? roundCurrency(costSubtotal / bottleCount) : 0;
   const unitPricePerBottle = bottleCount > 0 ? roundCurrency(quoteSubtotal / bottleCount) : 0;
+  const costUnitPricePerLiter = taxableVolumeLiters > 0 ? roundCurrency(costSubtotal / taxableVolumeLiters) : 0;
+  const quoteUnitPricePerLiter = taxableVolumeLiters > 0 ? roundCurrency(quoteSubtotal / taxableVolumeLiters) : 0;
 
   lineItems.push({
     label: "利益",
@@ -458,7 +461,7 @@ function calculateQuote(form) {
     `出荷想定本数 ${formatQuantity(bottleCount)} 本、出荷量 ${formatQuantity(roundQuantity(orderedVolumeLiters))} L、想定ロット数 ${formatQuantity(roundQuantity(lotCount))} ロット。`,
     `${formatQuantity(bottleSizeMl)}ml は ${appliedPackaging.label} の包装単価を使用しています。`,
     `白米使用量 ${formatQuantity(roundQuantity(whiteRiceKg))} kg、玄米調達量 ${formatQuantity(roundQuantity(brownRiceKg))} kg、麹米 ${formatQuantity(roundQuantity(kojiRiceKg))} kg、掛米 ${formatQuantity(roundQuantity(kakemaiKg))} kg。`,
-    `酒液原価は ${formatCurrency(derivedLiquidCostPerLiter)} / L。ロス込みの製造原価を出荷量で割り戻しています。`,
+    `原価単価は ${formatCurrency(costUnitPricePerBottle)} / 本、${formatCurrency(costUnitPricePerLiter)} / L。見積単価は ${formatCurrency(unitPricePerBottle)} / 本、${formatCurrency(quoteUnitPricePerLiter)} / L。`,
     `醸造期間 ${formatQuantity(sanitizeNumber(form.brewingDays))} 日、人日 ${formatQuantity(roundQuantity(laborPersonDays))} で算定。`,
     `${formatQuantity(sanitizeNumber(form.taxRate))}% の消費税を加算。`
   ];
@@ -523,6 +526,10 @@ function calculateQuote(form) {
     liquorTaxRatePerKl: roundCurrency(liquorTaxRatePerKl),
     liquorTaxAmount,
     derivedLiquidCostPerLiter: roundCurrency(derivedLiquidCostPerLiter),
+    costUnitPricePerBottle,
+    quoteUnitPricePerBottle: unitPricePerBottle,
+    costUnitPricePerLiter,
+    quoteUnitPricePerLiter,
     appliedPackagingLabel: appliedPackaging.label,
     appliedPackagingUsesBand: appliedPackaging.usesBand,
     costSubtotal,
@@ -674,8 +681,10 @@ function render() {
 
   document.getElementById("summary-total").textContent = formatCurrency(result.quoteTotal);
   document.getElementById("summary-liquor-tax").textContent = formatCurrency(result.liquorTaxAmount);
-  document.getElementById("summary-unit-bottle").textContent = formatCurrency(result.unitPricePerBottle);
-  document.getElementById("summary-liquid-unit-cost").textContent = formatCurrency(result.derivedLiquidCostPerLiter);
+  document.getElementById("summary-cost-unit-bottle").textContent = formatCurrency(result.costUnitPricePerBottle);
+  document.getElementById("summary-quote-unit-bottle").textContent = formatCurrency(result.quoteUnitPricePerBottle);
+  document.getElementById("summary-cost-unit-liter").textContent = formatCurrency(result.costUnitPricePerLiter);
+  document.getElementById("summary-quote-unit-liter").textContent = formatCurrency(result.quoteUnitPricePerLiter);
   document.getElementById("summary-brew-volume").textContent = `${formatQuantity(result.plannedBrewVolumeLiters)} L`;
   document.getElementById("summary-alcohol-percent").textContent = `${formatQuantity(sanitizeNumber(formState.targetAlcoholPercent))}% / ${formatQuantity(result.estimatedAlcoholPercent)}%`;
 
@@ -703,8 +712,12 @@ function render() {
   document.getElementById("preview-liquid-manufacturing-cost").textContent = formatCurrency(result.liquidManufacturingCost);
   document.getElementById("preview-liquor-tax").textContent = formatCurrency(result.liquorTaxAmount);
   document.getElementById("preview-cost-subtotal").textContent = formatCurrency(result.costSubtotal);
+  document.getElementById("preview-cost-unit-bottle").textContent = formatCurrency(result.costUnitPricePerBottle);
+  document.getElementById("preview-cost-unit-liter").textContent = formatCurrency(result.costUnitPricePerLiter);
   document.getElementById("preview-margin-amount").textContent = formatCurrency(result.marginAmount);
   document.getElementById("preview-quote-subtotal").textContent = formatCurrency(result.quoteSubtotal);
+  document.getElementById("preview-quote-unit-bottle").textContent = formatCurrency(result.quoteUnitPricePerBottle);
+  document.getElementById("preview-quote-unit-liter").textContent = formatCurrency(result.quoteUnitPricePerLiter);
   document.getElementById("preview-tax-amount").textContent = formatCurrency(result.taxAmount);
   document.getElementById("preview-total").textContent = formatCurrency(result.quoteTotal);
 
@@ -716,8 +729,10 @@ function render() {
   document.getElementById("tag-brew-volume").textContent = `出荷予定量 ${formatQuantity(result.plannedBrewVolumeLiters)} L`;
   document.getElementById("tag-loss-volume").textContent = `ロス見込 ${formatQuantity(result.lossVolumeLiters)} L`;
   document.getElementById("tag-tax-category").textContent = `酒類区分 ${categoryLabels[formState.taxCategory] ?? "-"}`;
-  document.getElementById("tag-liquid-unit-cost").textContent = `酒液原価 ${formatCurrency(result.derivedLiquidCostPerLiter)} / L`;
-  document.getElementById("tag-unit-bottle").textContent = `税抜単価 ${formatCurrency(result.unitPricePerBottle)} / 本`;
+  document.getElementById("tag-cost-unit-liter").textContent = `原価単価 ${formatCurrency(result.costUnitPricePerLiter)} / L`;
+  document.getElementById("tag-cost-unit-bottle").textContent = `原価単価 ${formatCurrency(result.costUnitPricePerBottle)} / 本`;
+  document.getElementById("tag-quote-unit-liter").textContent = `見積単価 ${formatCurrency(result.quoteUnitPricePerLiter)} / L`;
+  document.getElementById("tag-quote-unit-bottle").textContent = `見積単価 ${formatCurrency(result.quoteUnitPricePerBottle)} / 本`;
   document.getElementById("tag-white-rice").textContent = `白米使用量 ${formatQuantity(result.whiteRiceKg)} kg`;
   document.getElementById("tag-person-days").textContent = `人日 ${formatQuantity(result.laborPersonDays)}`;
   document.getElementById("tag-alcohol-percent").textContent = `推定度数 ${formatQuantity(result.estimatedAlcoholPercent)}%`;
@@ -774,6 +789,10 @@ function exportCsv() {
     ["brown_rice_kg", result.brownRiceKg],
     ["labor_person_days", result.laborPersonDays],
     ["derived_liquid_cost_per_liter", result.derivedLiquidCostPerLiter],
+    ["cost_unit_price_per_bottle", result.costUnitPricePerBottle],
+    ["quote_unit_price_per_bottle", result.quoteUnitPricePerBottle],
+    ["cost_unit_price_per_liter", result.costUnitPricePerLiter],
+    ["quote_unit_price_per_liter", result.quoteUnitPricePerLiter],
     ["quote_subtotal", result.quoteSubtotal],
     ["tax_amount", result.taxAmount],
     ["quote_total", result.quoteTotal],
