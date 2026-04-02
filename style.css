@@ -225,7 +225,8 @@ a {
 }
 
 .form-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px 20px;
 }
 
 .field {
@@ -235,8 +236,17 @@ a {
 }
 
 .field span {
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.unit-hint {
+  font-size: 12px;
+  font-weight: normal;
   color: var(--muted);
+  margin-left: 6px;
 }
 
 .field-hint {
@@ -250,14 +260,16 @@ a {
 }
 
 .subsection-title {
+  margin-top: 12px;
   margin-bottom: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
+  padding: 12px 16px;
+  background: rgba(31, 77, 99, 0.06);
+  border-radius: 8px;
+  border-left: 4px solid var(--accent-2);
   color: var(--accent-2);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .full-span {
@@ -268,11 +280,28 @@ input,
 textarea,
 select {
   width: 100%;
-  border: 1px solid rgba(55, 37, 22, 0.16);
+  border: 1px solid rgba(55, 37, 22, 0.25);
   background: white;
   color: var(--ink);
-  border-radius: 14px;
-  padding: 11px 13px;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(141, 61, 19, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+input[type="number"] {
+  font-family: "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  text-align: right;
 }
 
 textarea {
@@ -442,6 +471,7 @@ input[readonly] {
 }
 
 @media (max-width: 1120px) {
+
   .page-shell,
   .summary-grid,
   .content-grid,

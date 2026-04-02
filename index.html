@@ -133,11 +133,11 @@
             <div class="subsection-title">瓶詰条件</div>
             <div class="form-grid">
               <label class="field">
-                <span>目標アルコール度数 (%)</span>
+                <span>目標アルコール度数 <span class="unit-hint">(%)</span></span>
                 <input type="number" data-field="targetAlcoholPercent" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>容量 (ml)</span>
+                <span>容量 <span class="unit-hint">(ml)</span></span>
                 <input type="number" data-field="bottleSizeMl" min="0" step="1" />
               </label>
               <label class="field">
@@ -145,16 +145,16 @@
                 <input type="number" data-field="bottlesPerLot" min="0" step="1" />
               </label>
               <label class="field">
-                <span>想定ロット数 (自動)</span>
+                <span>想定ロット数 <span class="unit-hint">(自動)</span></span>
                 <input type="number" data-field="lotCount" min="0" step="0.01" readonly />
                 <small class="field-hint">瓶詰可能本数と1ロット本数から自動算出します。</small>
               </label>
               <label class="field">
-                <span>歩留まりロス (%)</span>
+                <span>歩留まりロス <span class="unit-hint">(%)</span></span>
                 <input type="number" data-field="expectedLossRate" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>出荷予定量 (L・加水後)</span>
+                <span>出荷予定量 <span class="unit-hint">(L・加水後)</span></span>
                 <input type="number" data-field="plannedBrewVolumeLiters" min="0" step="1" />
                 <small class="field-hint">納品したい最終液量です。ロス込みの製造量は自動で上乗せします。</small>
               </label>
@@ -187,23 +187,23 @@
             </p>
             <div class="form-grid">
               <label class="field">
-                <span>原酒アルコール度数 (%)</span>
+                <span>原酒アルコール度数 <span class="unit-hint">(%)</span></span>
                 <input type="number" data-field="baseSakeAlcoholPercent" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>原酒寄与率 (%・目標純アルコール比)</span>
+                <span>原酒寄与率 <span class="unit-hint">(%・目標純アルコール比)</span></span>
                 <input type="number" data-field="genshuContributionPercent" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>原料用アルコール寄与率 (%・目標純アルコール比)</span>
+                <span>原料用アルコール寄与率 <span class="unit-hint">(%・目標純アルコール比)</span></span>
                 <input type="number" data-field="alcoholContributionPercent" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>原料用アルコール単価 (円/L)</span>
+                <span>原料用アルコール単価 <span class="unit-hint">(円/L)</span></span>
                 <input type="number" data-field="alcoholCostPerLiter" min="0" step="1" />
               </label>
               <label class="field">
-                <span>原料用アルコール度数 (%)</span>
+                <span>原料用アルコール度数 <span class="unit-hint">(%)</span></span>
                 <input type="number" data-field="alcoholStrengthPercent" min="0" step="0.1" />
               </label>
               <label class="field">
@@ -211,15 +211,15 @@
                 <input type="text" data-field="otherLiquorName" />
               </label>
               <label class="field">
-                <span>ブレンド酒寄与率 (%・目標純アルコール比)</span>
+                <span>ブレンド酒寄与率 <span class="unit-hint">(%・目標純アルコール比)</span></span>
                 <input type="number" data-field="otherLiquorContributionPercent" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>ブレンド酒単価 (円/L)</span>
+                <span>ブレンド酒単価 <span class="unit-hint">(円/L)</span></span>
                 <input type="number" data-field="otherLiquorCostPerLiter" min="0" step="1" />
               </label>
               <label class="field">
-                <span>ブレンド酒度数 (%)</span>
+                <span>ブレンド酒度数 <span class="unit-hint">(%)</span></span>
                 <input type="number" data-field="otherLiquorAlcoholPercent" min="0" step="0.1" />
               </label>
               <label class="field">
@@ -227,20 +227,20 @@
                 <input type="text" data-field="fruitIngredientName" />
               </label>
               <label class="field">
-                <span>果汁等比率 (%・製造必要量比)</span>
+                <span>果汁等比率 <span class="unit-hint">(%・製造必要量比)</span></span>
                 <input type="number" data-field="fruitIngredientBlendPercent" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>果汁等単価 (円/L)</span>
+                <span>果汁等単価 <span class="unit-hint">(円/L)</span></span>
                 <input type="number" data-field="fruitIngredientCostPerLiter" min="0" step="1" />
               </label>
               <label class="field">
-                <span>果汁等加工費 (円・固定)</span>
+                <span>果汁等加工費 <span class="unit-hint">(円・固定)</span></span>
                 <input type="number" data-field="fruitIngredientProcessingFee" min="0" step="1" />
                 <small class="field-hint">へた取り、洗浄、カット、搾汁などの工数を固定費として見込みます。</small>
               </label>
               <label class="field">
-                <span>果汁等アルコール度数 (%)</span>
+                <span>果汁等アルコール度数 <span class="unit-hint">(%)</span></span>
                 <input type="number" data-field="fruitIngredientAlcoholPercent" min="0" step="0.1" />
                 <small class="field-hint">果汁なら通常 0 のままで大丈夫です。</small>
               </label>
@@ -295,27 +295,27 @@
             <div class="subsection-title">原酒原材料</div>
             <div class="form-grid">
               <label class="field">
-                <span>玄米単価 (円/kg)</span>
+                <span>玄米単価 <span class="unit-hint">(円/kg)</span></span>
                 <input type="number" data-field="brownRiceCostPerKg" min="0" step="1" />
               </label>
               <label class="field">
-                <span>精米歩合 (%)</span>
+                <span>精米歩合 <span class="unit-hint">(%)</span></span>
                 <input type="number" data-field="ricePolishingRatio" min="1" max="100" step="0.1" />
               </label>
               <label class="field">
-                <span>白米1kgあたり製成酒量 (L/kg)</span>
+                <span>白米1kgあたり製成酒量 <span class="unit-hint">(L/kg)</span></span>
                 <input type="number" data-field="litersPerKgWhiteRice" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>麹歩合 (%)</span>
+                <span>麹歩合 <span class="unit-hint">(%)</span></span>
                 <input type="number" data-field="kojiRatioPercent" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>その他原材料費 (円/L・原酒)</span>
+                <span>その他原材料費 <span class="unit-hint">(円/L・原酒)</span></span>
                 <input type="number" data-field="otherRawMaterialCostPerLiter" min="0" step="1" />
               </label>
               <label class="field">
-                <span>設備・ユーティリティ費 (円/L・原酒)</span>
+                <span>設備・ユーティリティ費 <span class="unit-hint">(円/L・原酒)</span></span>
                 <input type="number" data-field="facilityUtilityCostPerLiter" min="0" step="1" />
                 <small class="field-hint">タンク、冷却、洗浄、衛生資材などの按分想定です。</small>
               </label>
@@ -324,15 +324,15 @@
             <div class="subsection-title">製造人件費</div>
             <div class="form-grid">
               <label class="field">
-                <span>醸造期間 (日)</span>
+                <span>醸造期間 <span class="unit-hint">(日)</span></span>
                 <input type="number" data-field="brewingDays" min="0" step="1" />
               </label>
               <label class="field">
-                <span>必要人員数 (人)</span>
+                <span>必要人員数 <span class="unit-hint">(人)</span></span>
                 <input type="number" data-field="staffCount" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>人件費 (円/人日)</span>
+                <span>人件費 <span class="unit-hint">(円/人日)</span></span>
                 <input type="number" data-field="laborCostPerPersonDay" min="0" step="1" />
               </label>
             </div>
@@ -436,31 +436,31 @@
             <p class="field-hint" id="packaging-rate-mode">現在は共通単価が見積内訳に反映されています。</p>
             <div class="form-grid">
               <label class="field">
-                <span>瓶 (円/本)</span>
+                <span>瓶 <span class="unit-hint">(円/本)</span></span>
                 <input type="number" data-field="bottleCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
-                <span>キャップ・栓 (円/本)</span>
+                <span>キャップ・栓 <span class="unit-hint">(円/本)</span></span>
                 <input type="number" data-field="capCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
-                <span>ラベル (円/本)</span>
+                <span>ラベル <span class="unit-hint">(円/本)</span></span>
                 <input type="number" data-field="labelCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
-                <span>箱・梱包 (円/本)</span>
+                <span>箱・梱包 <span class="unit-hint">(円/本)</span></span>
                 <input type="number" data-field="cartonCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
-                <span>充填・火入れ (円/本)</span>
+                <span>充填・火入れ <span class="unit-hint">(円/本)</span></span>
                 <input type="number" data-field="fillingCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
-                <span>品質検査 (円/本)</span>
+                <span>品質検査 <span class="unit-hint">(円/本)</span></span>
                 <input type="number" data-field="qaCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
-                <span>保管・物流 (円/本)</span>
+                <span>保管・物流 <span class="unit-hint">(円/本)</span></span>
                 <input type="number" data-field="logisticsCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
             </div>
@@ -468,15 +468,15 @@
             <div class="subsection-title">固定費・利益</div>
             <div class="form-grid">
               <label class="field">
-                <span>試作・レシピ調整 (円)</span>
+                <span>試作・レシピ調整 <span class="unit-hint">(円)</span></span>
                 <input type="number" data-field="developmentFee" min="0" step="1" />
               </label>
               <label class="field">
-                <span>表示・デザイン調整 (円)</span>
+                <span>表示・デザイン調整 <span class="unit-hint">(円)</span></span>
                 <input type="number" data-field="designFee" min="0" step="1" />
               </label>
               <label class="field">
-                <span>進行管理・申請対応 (円)</span>
+                <span>進行管理・申請対応 <span class="unit-hint">(円)</span></span>
                 <input type="number" data-field="adminFee" min="0" step="1" />
               </label>
               <label class="field">
@@ -484,15 +484,15 @@
                 <input type="text" data-field="miscFeeLabel" />
               </label>
               <label class="field">
-                <span>その他費用 (円)</span>
+                <span>その他費用 <span class="unit-hint">(円)</span></span>
                 <input type="number" data-field="miscFee" min="0" step="1" />
               </label>
               <label class="field">
-                <span>利益率 (%)</span>
+                <span>利益率 <span class="unit-hint">(%)</span></span>
                 <input type="number" data-field="marginRate" min="0" step="0.1" />
               </label>
               <label class="field">
-                <span>消費税率 (%)</span>
+                <span>消費税率 <span class="unit-hint">(%)</span></span>
                 <input type="number" data-field="taxRate" min="0" step="0.1" />
               </label>
             </div>
@@ -567,7 +567,7 @@
                   <strong id="preview-margin-amount">¥0</strong>
                 </div>
                 <div class="total-row">
-                  <span>見積金額 (税抜)</span>
+                  <span>見積金額 <span class="unit-hint">(税抜)</span></span>
                   <strong id="preview-quote-subtotal">¥0</strong>
                 </div>
                 <div class="total-row">
@@ -575,7 +575,7 @@
                   <strong id="preview-tax-amount">¥0</strong>
                 </div>
                 <div class="total-row total-row-strong">
-                  <span>御見積金額(税込)</span>
+                  <span>御見積金額 <span class="unit-hint">(税込)</span></span>
                   <strong id="preview-total">¥0</strong>
                 </div>
               </div>
