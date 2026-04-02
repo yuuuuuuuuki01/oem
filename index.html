@@ -59,16 +59,33 @@
           </section>
 
           <!-- 2. 原酒 (Genshu) -->
-          <section class="panel" id="panel-genshu">
+          
+          <!-- 2. 配合比率設計 (Blend Ratios) -->
+          <section class="panel" id="panel-ratios">
             <div class="panel-header">
               <div>
                 <p class="eyebrow">02</p>
+                <h3>配合比率設計 (各カテゴリの寄与率)</h3>
+              </div>
+            </div>
+            <p class="field-hint" style="margin-bottom: 20px;">各原料を目標純アルコール量に対して何%入れるか（果汁等は目標液量に対する%）を並列で設計・比較できます。</p>
+            <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
+              <label class="field"><span>原酒寄与率 <span class="unit-hint">(%・目標純アルコール比)</span></span><input type="number" data-field="genshuContributionPercent" min="0" step="0.1" /></label>
+              <label class="field"><span>原料用アルコール寄与率 <span class="unit-hint">(%・目標純アルコール比)</span></span><input type="number" data-field="alcoholContributionPercent" min="0" step="0.1" /></label>
+              <label class="field"><span>ブレンド酒寄与率 <span class="unit-hint">(%・目標純アルコール比)</span></span><input type="number" data-field="otherLiquorContributionPercent" min="0" step="0.1" /></label>
+              <label class="field"><span>果汁等比率 <span class="unit-hint">(%・製造必要量比)</span></span><input type="number" data-field="fruitIngredientBlendPercent" min="0" step="0.1" /></label>
+            </div>
+          </section>
+          <section class="panel" id="panel-genshu">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">03</p>
                 <h3>原酒 (Genshu)</h3>
               </div>
             </div>
             <div class="form-grid">
               <label class="field"><span>原酒アルコール度数 <span class="unit-hint">(%)</span></span><input type="number" data-field="baseSakeAlcoholPercent" min="0" step="0.1" /></label>
-              <label class="field"><span>原酒寄与率 <span class="unit-hint">(%・目標純アルコール比)</span></span><input type="number" data-field="genshuContributionPercent" min="0" step="0.1" /></label>
+              
               <label class="field"><span>玄米単価 <span class="unit-hint">(円/kg)</span></span><input type="number" data-field="brownRiceCostPerKg" min="0" step="1" /></label>
               <label class="field"><span>精米歩合 <span class="unit-hint">(%)</span></span><input type="number" data-field="ricePolishingRatio" min="1" max="100" step="0.1" /></label>
               <label class="field"><span>白米1kgあたり製成酒量 <span class="unit-hint">(L/kg)</span></span><input type="number" data-field="litersPerKgWhiteRice" min="0" step="0.1" /></label>
@@ -85,12 +102,12 @@
           <section class="panel" id="panel-alcohol">
             <div class="panel-header">
               <div>
-                <p class="eyebrow">03</p>
+                <p class="eyebrow">04</p>
                 <h3>原料用アルコール (Brewing Alcohol)</h3>
               </div>
             </div>
             <div class="form-grid">
-              <label class="field"><span>原料用アルコール寄与率 <span class="unit-hint">(%・目標純アルコール比)</span></span><input type="number" data-field="alcoholContributionPercent" min="0" step="0.1" /></label>
+              
               <label class="field"><span>原料用アルコール単価 <span class="unit-hint">(円/L)</span></span><input type="number" data-field="alcoholCostPerLiter" min="0" step="1" /></label>
               <label class="field"><span>原料用アルコール度数 <span class="unit-hint">(%)</span></span><input type="number" data-field="alcoholStrengthPercent" min="0" step="0.1" /></label>
             </div>
@@ -100,13 +117,13 @@
           <section class="panel" id="panel-blend">
             <div class="panel-header">
               <div>
-                <p class="eyebrow">04</p>
+                <p class="eyebrow">05</p>
                 <h3>ブレンド酒 (Blending Liquor)</h3>
               </div>
             </div>
             <div class="form-grid">
               <label class="field"><span>ブレンド酒名</span><input type="text" data-field="otherLiquorName" /></label>
-              <label class="field"><span>ブレンド酒寄与率 <span class="unit-hint">(%・目標純アルコール比)</span></span><input type="number" data-field="otherLiquorContributionPercent" min="0" step="0.1" /></label>
+              
               <label class="field"><span>ブレンド酒単価 <span class="unit-hint">(円/L)</span></span><input type="number" data-field="otherLiquorCostPerLiter" min="0" step="1" /></label>
               <label class="field"><span>ブレンド酒度数 <span class="unit-hint">(%)</span></span><input type="number" data-field="otherLiquorAlcoholPercent" min="0" step="0.1" /></label>
             </div>
@@ -116,13 +133,13 @@
           <section class="panel" id="panel-fruit">
             <div class="panel-header">
               <div>
-                <p class="eyebrow">05</p>
+                <p class="eyebrow">06</p>
                 <h3>果汁等・その他副原料</h3>
               </div>
             </div>
             <div class="form-grid">
               <label class="field"><span>果汁等名称</span><input type="text" data-field="fruitIngredientName" /></label>
-              <label class="field"><span>果汁等比率 <span class="unit-hint">(%・製造必要量比)</span></span><input type="number" data-field="fruitIngredientBlendPercent" min="0" step="0.1" /></label>
+              
               <label class="field"><span>果汁等単価 <span class="unit-hint">(円/L)</span></span><input type="number" data-field="fruitIngredientCostPerLiter" min="0" step="1" /></label>
               <label class="field"><span>果汁等加工費 <span class="unit-hint">(円・固定)</span></span><input type="number" data-field="fruitIngredientProcessingFee" min="0" step="1" /></label>
               <label class="field"><span>果汁等アルコール度数 <span class="unit-hint">(%)</span></span><input type="number" data-field="fruitIngredientAlcoholPercent" min="0" step="0.1" /></label>
@@ -133,7 +150,7 @@
           <section class="panel" id="panel-packaging">
             <div class="panel-header">
               <div>
-                <p class="eyebrow">06</p>
+                <p class="eyebrow">07</p>
                 <h3>包装・出荷 (Packaging)</h3>
               </div>
             </div>
@@ -239,7 +256,7 @@
           <section class="panel" id="panel-margin">
             <div class="panel-header">
               <div>
-                <p class="eyebrow">07</p>
+                <p class="eyebrow">08</p>
                 <h3>固定費・利益設定</h3>
               </div>
             </div>
