@@ -433,34 +433,35 @@
             <p class="field-hint" id="active-packaging-band">適用容量帯: -</p>
 
             <div class="subsection-title">共通単価（容量帯未一致時）</div>
+            <p class="field-hint" id="packaging-rate-mode">現在は共通単価が見積内訳に反映されています。</p>
             <div class="form-grid">
               <label class="field">
                 <span>瓶 (円/本)</span>
-                <input type="number" data-field="bottleCostPerBottle" min="0" step="1" />
+                <input type="number" data-field="bottleCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
                 <span>キャップ・栓 (円/本)</span>
-                <input type="number" data-field="capCostPerBottle" min="0" step="1" />
+                <input type="number" data-field="capCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
                 <span>ラベル (円/本)</span>
-                <input type="number" data-field="labelCostPerBottle" min="0" step="1" />
+                <input type="number" data-field="labelCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
                 <span>箱・梱包 (円/本)</span>
-                <input type="number" data-field="cartonCostPerBottle" min="0" step="1" />
+                <input type="number" data-field="cartonCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
                 <span>充填・火入れ (円/本)</span>
-                <input type="number" data-field="fillingCostPerBottle" min="0" step="1" />
+                <input type="number" data-field="fillingCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
                 <span>品質検査 (円/本)</span>
-                <input type="number" data-field="qaCostPerBottle" min="0" step="1" />
+                <input type="number" data-field="qaCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
               <label class="field">
                 <span>保管・物流 (円/本)</span>
-                <input type="number" data-field="logisticsCostPerBottle" min="0" step="1" />
+                <input type="number" data-field="logisticsCostPerBottle" data-fallback-packaging="true" min="0" step="1" />
               </label>
             </div>
 

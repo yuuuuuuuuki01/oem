@@ -224,6 +224,10 @@ function createLineItem(label, unit, quantity, unitPrice, category) {
   };
 }
 
+function withPackagingLabel(label, appliedPackaging) {
+  return appliedPackaging.usesBand ? `${label} (${appliedPackaging.label})` : label;
+}
+
 function getPackagingBandCostFieldName(bandIndex, costKey) {
   return `packagingBand${bandIndex}${costKey[0].toUpperCase()}${costKey.slice(1)}`;
 }
@@ -396,13 +400,13 @@ function calculateQuote(form) {
     createLineItem("人件費", "人日", laborPersonDays, form.laborCostPerPersonDay, "製造経費"),
     createLineItem("設備・ユーティリティ費", "L", genshuVolume, form.facilityUtilityCostPerLiter, "製造経費"),
     createLineItem("酒税", "kl", taxableVolumeLiters / 1000, liquorTaxRatePerKl, "税金"),
-    createLineItem("瓶", "本", bottleCount, appliedPackaging.rates.bottleCostPerBottle, "包装・出荷"),
-    createLineItem("キャップ・栓", "本", bottleCount, appliedPackaging.rates.capCostPerBottle, "包装・出荷"),
-    createLineItem("ラベル", "本", bottleCount, appliedPackaging.rates.labelCostPerBottle, "包装・出荷"),
-    createLineItem("箱・梱包", "本", bottleCount, appliedPackaging.rates.cartonCostPerBottle, "包装・出荷"),
-    createLineItem("充填・火入れ", "本", bottleCount, appliedPackaging.rates.fillingCostPerBottle, "包装・出荷"),
-    createLineItem("品質検査", "本", bottleCount, appliedPackaging.rates.qaCostPerBottle, "包装・出荷"),
-    createLineItem("保管・物流", "本", bottleCount, appliedPackaging.rates.logisticsCostPerBottle, "包装・出荷"),
+    createLineItem(withPackagingLabel("瓶", appliedPackaging), "本", bottleCount, appliedPackaging.rates.bottleCostPerBottle, "包装・出荷"),
+    createLineItem(withPackagingLabel("キャップ・栓", appliedPackaging), "本", bottleCount, appliedPackaging.rates.capCostPerBottle, "包装・出荷"),
+    createLineItem(withPackagingLabel("ラベル", appliedPackaging), "本", bottleCount, appliedPackaging.rates.labelCostPerBottle, "包装・出荷"),
+    createLineItem(withPackagingLabel("箱・梱包", appliedPackaging), "本", bottleCount, appliedPackaging.rates.cartonCostPerBottle, "包装・出荷"),
+    createLineItem(withPackagingLabel("充填・火入れ", appliedPackaging), "本", bottleCount, appliedPackaging.rates.fillingCostPerBottle, "包装・出荷"),
+    createLineItem(withPackagingLabel("品質検査", appliedPackaging), "本", bottleCount, appliedPackaging.rates.qaCostPerBottle, "包装・出荷"),
+    createLineItem(withPackagingLabel("保管・物流", appliedPackaging), "本", bottleCount, appliedPackaging.rates.logisticsCostPerBottle, "包装・出荷"),
     createLineItem("試作・レシピ調整", "式", 1, form.developmentFee, "固定費"),
     createLineItem("表示・デザイン調整", "式", 1, form.designFee, "固定費"),
     createLineItem("進行管理・申請対応", "式", 1, form.adminFee, "固定費"),
@@ -593,6 +597,12 @@ function render() {
     `${formState.productName || "製品名未入力"} / ${formState.sakeType || "酒質未入力"} / ${categoryLabels[formState.taxCategory] ?? "リキュール"}`;
   document.getElementById("active-packaging-band").textContent =
     `適用容量帯: ${result.appliedPackagingLabel}${result.appliedPackagingUsesBand ? "" : "（共通単価を使用）"}`;
+  document.getElementById("packaging-rate-mode").textContent = result.appliedPackagingUsesBand
+    ? `現在は ${result.appliedPackagingLabel} が適用中です。下の共通単価は見積内訳に反映されません。`
+    : "現在は共通単価が見積内訳に反映されています。容量帯を設定すると自動で切り替わります。";
+  document.querySelectorAll("[data-fallback-packaging='true']").forEach((element) => {
+    element.disabled = result.appliedPackagingUsesBand;
+  });
   document.getElementById("preview-liquid-manufacturing-cost").textContent = formatCurrency(result.liquidManufacturingCost);
   document.getElementById("preview-liquor-tax").textContent = formatCurrency(result.liquorTaxAmount);
   document.getElementById("preview-cost-subtotal").textContent = formatCurrency(result.costSubtotal);
