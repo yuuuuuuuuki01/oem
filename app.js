@@ -1,4 +1,5 @@
 const STORAGE_KEY = "sake-oem-quote-form-v5";
+const SAVED_QUOTES_KEY = "sake-oem-quote-snapshots-v1";
 
 const numericFields = new Set([
   "targetAlcoholPercent",
@@ -197,6 +198,24 @@ function roundCurrency(value) {
 
 function roundQuantity(value) {
   return Number(value.toFixed(2));
+}
+
+function formatDateTime(value) {
+  return new Intl.DateTimeFormat("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date(value));
+}
+
+function createId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `saved-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 function formatCurrency(value) {
@@ -537,13 +556,51 @@ function saveForm(form) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
 }
 
+function loadSavedQuotes() {
+  try {
+    const raw = localStorage.getItem(SAVED_QUOTES_KEY);
+    if (!raw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSavedQuotes(savedQuotes) {
+  localStorage.setItem(SAVED_QUOTES_KEY, JSON.stringify(savedQuotes));
+}
+
 const formState = loadForm();
+let savedQuotesState = loadSavedQuotes();
+
+function createSnapshotName(form) {
+  const parts = [form.clientName, form.productName, form.quoteNumber].filter(Boolean);
+  return parts.length > 0 ? parts.join(" / ") : `見積保存 ${todayString()}`;
+}
 
 function syncInputs() {
   document.querySelectorAll("[data-field]").forEach((element) => {
     const field = element.dataset.field;
     element.value = formState[field] ?? "";
   });
+}
+
+function applyFormSnapshot(snapshot) {
+  const defaults = createDefaultForm();
+  Object.keys(defaults).forEach((key) => {
+    formState[key] = snapshot[key] ?? defaults[key];
+  });
+  saveForm(formState);
+  syncInputs();
+  const saveNameInput = document.getElementById("save-name");
+  if (saveNameInput) {
+    saveNameInput.value = "";
+  }
+  render();
 }
 
 function renderLineItems(lineItems) {
@@ -568,6 +625,46 @@ function renderAssumptions(assumptions) {
   const container = document.getElementById("assumptions-list");
   container.innerHTML = assumptions
     .map((item) => `<div class="note-card"><p class="muted">${escapeHtml(item)}</p></div>`)
+    .join("");
+}
+
+function renderSavedQuotes() {
+  const container = document.getElementById("saved-quotes-list");
+  const status = document.getElementById("save-status");
+
+  if (savedQuotesState.length === 0) {
+    container.innerHTML = `<div class="saved-quote-empty">保存済み見積はまだありません。必要な条件を入れたら「保存」で残せます。</div>`;
+    status.textContent = "保存履歴はまだありません。";
+    return;
+  }
+
+  status.textContent = `${savedQuotesState.length}件の保存済み見積があります。`;
+  container.innerHTML = savedQuotesState
+    .map((entry) => {
+      const summary = entry.summary ?? {};
+      return `
+        <article class="saved-quote-card">
+          <div class="saved-quote-head">
+            <p class="saved-quote-title">${escapeHtml(entry.name)}</p>
+            <span class="muted">${escapeHtml(formatDateTime(entry.savedAt))}</span>
+          </div>
+          <div class="saved-quote-meta">
+            <span>${escapeHtml(entry.form?.clientName || "-")}</span>
+            <span>${escapeHtml(entry.form?.productName || "-")}</span>
+            <span>${escapeHtml(entry.form?.quoteNumber || "-")}</span>
+          </div>
+          <div class="saved-quote-meta">
+            <span>税込 ${escapeHtml(formatCurrency(summary.quoteTotal ?? 0))}</span>
+            <span>出荷量 ${escapeHtml(formatQuantity(summary.plannedBrewVolumeLiters ?? 0))} L</span>
+            <span>${escapeHtml(formatQuantity(entry.form?.bottleSizeMl ?? 0))} ml</span>
+          </div>
+          <div class="saved-quote-actions">
+            <button class="button" data-saved-action="load" data-saved-id="${escapeHtml(entry.id)}">読み込む</button>
+            <button class="secondary-button" data-saved-action="delete" data-saved-id="${escapeHtml(entry.id)}">削除</button>
+          </div>
+        </article>
+      `;
+    })
     .join("");
 }
 
@@ -629,6 +726,7 @@ function render() {
 
   renderLineItems(result.lineItems);
   renderAssumptions(result.assumptions);
+  renderSavedQuotes();
 
   return result;
 }
@@ -709,6 +807,28 @@ function resetForm() {
   render();
 }
 
+function saveCurrentQuote() {
+  const saveNameInput = document.getElementById("save-name");
+  const rawName = saveNameInput.value.trim();
+  const name = rawName || createSnapshotName(formState);
+  const result = calculateQuote(formState);
+  const snapshot = {
+    id: createId(),
+    name,
+    savedAt: new Date().toISOString(),
+    form: { ...formState },
+    summary: {
+      quoteTotal: result.quoteTotal,
+      plannedBrewVolumeLiters: result.plannedBrewVolumeLiters
+    }
+  };
+
+  savedQuotesState = [snapshot, ...savedQuotesState].slice(0, 30);
+  saveSavedQuotes(savedQuotesState);
+  saveNameInput.value = "";
+  renderSavedQuotes();
+}
+
 document.addEventListener("input", (event) => {
   const target = event.target;
 
@@ -726,6 +846,39 @@ document.addEventListener("input", (event) => {
   render();
 });
 
+document.addEventListener("click", (event) => {
+  const target = event.target;
+
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const savedAction = target.dataset.savedAction;
+  const savedId = target.dataset.savedId;
+
+  if (!savedAction || !savedId) {
+    return;
+  }
+
+  const targetQuote = savedQuotesState.find((entry) => entry.id === savedId);
+  if (!targetQuote) {
+    return;
+  }
+
+  if (savedAction === "load") {
+    applyFormSnapshot(targetQuote.form);
+    return;
+  }
+
+  if (savedAction === "delete") {
+    savedQuotesState = savedQuotesState.filter((entry) => entry.id !== savedId);
+    saveSavedQuotes(savedQuotesState);
+    renderSavedQuotes();
+  }
+});
+
+document.getElementById("save-quote").addEventListener("click", saveCurrentQuote);
+document.getElementById("save-quote-secondary").addEventListener("click", saveCurrentQuote);
 document.getElementById("download-csv").addEventListener("click", exportCsv);
 document.getElementById("print-quote").addEventListener("click", () => window.print());
 document.getElementById("reset-form").addEventListener("click", resetForm);

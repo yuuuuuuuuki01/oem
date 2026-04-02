@@ -348,6 +348,76 @@ input[readonly] {
   border: none;
 }
 
+.secondary-button {
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-strong);
+  background: white;
+  color: var(--ink);
+}
+
+.action-field {
+  justify-content: end;
+}
+
+.status-chip {
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: var(--bg-app);
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+}
+
+.saved-quote-list {
+  display: grid;
+  gap: 12px;
+}
+
+.saved-quote-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: white;
+}
+
+.saved-quote-head,
+.saved-quote-meta,
+.saved-quote-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.saved-quote-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.saved-quote-meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.saved-quote-empty {
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px dashed var(--border-strong);
+  color: var(--muted);
+  background: white;
+}
+
 .button {
   background: var(--accent);
   color: white;

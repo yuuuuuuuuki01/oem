@@ -15,13 +15,38 @@
           <h1>Sake Pricing Calculator</h1>
           <p>クリーン＆ダイレクトな見積計算ツール</p>
           <div class="hero-actions">
+            <button id="save-quote" class="button">保存</button>
             <button id="download-csv" class="button">CSV出力</button>
             <button id="print-quote" class="ghost-button">印刷</button>
             <button id="reset-form" class="ghost-button">初期値に戻す</button>
           </div>
         </header>
+        <section class="panel" id="saved-quotes-panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Library</p>
+              <h3>保存・参照</h3>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label class="field">
+              <span>保存名</span>
+              <input type="text" id="save-name" placeholder="例: 柚子リキュール 720ml 初版" />
+            </label>
+            <div class="field action-field">
+              <span>保存操作</span>
+              <button id="save-quote-secondary" class="button">この見積を保存</button>
+            </div>
+            <div class="field">
+              <span>保存状況</span>
+              <div class="status-chip" id="save-status">保存履歴はまだありません。</div>
+            </div>
+          </div>
+          <div class="subsection-title">保存済み見積</div>
+          <div class="saved-quote-list" id="saved-quotes-list"></div>
+        </section>
 
-                <div class="inputs-flow">
+        <div class="inputs-flow">
           <!-- 1. 基本情報・目標スペック -->
           <section class="panel theme-basic" id="panel-basic">
             <div class="panel-header">
