@@ -6,84 +6,22 @@
     <title>酒蔵OEM見積ツール</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
-  <body>
-    <div class="page-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-mark">OEM</div>
-          <div>
-            <p class="eyebrow">Sake Brewery Pricing</p>
-            <h1>酒蔵OEM見積ツール</h1>
-          </div>
-        </div>
-
-        <nav class="sidebar-nav">
-          <a href="#project-panel">案件条件</a>
-          <a href="#recipe-panel">配合・酒税</a>
-          <a href="#cost-panel">原価条件</a>
-          <a href="#quote-breakdown">見積内訳</a>
-          <a href="#quote-preview">見積プレビュー</a>
-        </nav>
-
-        <section class="sidebar-panel">
-          <p class="eyebrow">できること</p>
-          <ul>
-            <li>仕込み予定量を加水後の最終液量として扱う</li>
-            <li>目標度数から原酒量と加水量を逆算する</li>
-            <li>酒類区分ごとの酒税率で酒税を自動計算する</li>
-            <li>米、副原料、人件費、包装費をまとめて見積化する</li>
-          </ul>
-        </section>
-      </aside>
-
-      <main class="main">
-        <section class="hero">
-          <p class="eyebrow">Quotation Workspace</p>
-          <h2>加水後の仕込み予定量から原酒量と酒税まで一気に固める。</h2>
-          <p class="hero-copy">
-            清酒OEMでもリキュールOEMでも、最終液量、度数、ブレンド比率、酒税、原材料費、人件費、包装費まで通しで見積できます。
-          </p>
+    <body>
+    <div class="calculator-app">
+      
+      <!-- LEFT PANE: KEYPAD / INPUTS -->
+      <main class="keypad-area">
+        <header class="app-header">
+          <h1>Sake Pricing Calculator</h1>
+          <p>クリーン＆ダイレクトな見積計算ツール</p>
           <div class="hero-actions">
             <button id="download-csv" class="button">CSV出力</button>
             <button id="print-quote" class="ghost-button">印刷</button>
             <button id="reset-form" class="ghost-button">初期値に戻す</button>
           </div>
-        </section>
+        </header>
 
-        <section class="summary-grid">
-          <article class="summary-card">
-            <p class="eyebrow">見積総額</p>
-            <p class="summary-value" id="summary-total">¥0</p>
-            <p class="muted">消費税込みの提示金額</p>
-          </article>
-          <article class="summary-card">
-            <p class="eyebrow">酒税額</p>
-            <p class="summary-value" id="summary-liquor-tax">¥0</p>
-            <p class="muted">酒類区分と度数から算定</p>
-          </article>
-          <article class="summary-card">
-            <p class="eyebrow">税抜単価 / 本</p>
-            <p class="summary-value" id="summary-unit-bottle">¥0</p>
-            <p class="muted">瓶詰可能本数換算</p>
-          </article>
-          <article class="summary-card">
-            <p class="eyebrow">酒液原価 / L</p>
-            <p class="summary-value" id="summary-liquid-unit-cost">¥0</p>
-            <p class="muted">原酒ベースの原価を反映</p>
-          </article>
-          <article class="summary-card">
-            <p class="eyebrow">出荷予定量</p>
-            <p class="summary-value" id="summary-brew-volume">0 L</p>
-            <p class="muted">納品したい加水後数量</p>
-          </article>
-          <article class="summary-card">
-            <p class="eyebrow">アルコール度数</p>
-            <p class="summary-value" id="summary-alcohol-percent">0%</p>
-            <p class="muted">目標度数 / 推定度数</p>
-          </article>
-        </section>
-
-        <div class="content-grid">
+        <div class="inputs-flow">
           <section class="panel" id="project-panel">
             <div class="panel-header">
               <div>
@@ -173,6 +111,7 @@
             </div>
           </section>
 
+          
           <section class="panel" id="recipe-panel">
             <div class="panel-header">
               <div>
@@ -338,6 +277,62 @@
             </div>
           </section>
 
+          
+          <section class="panel" id="cost-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Cost</p>
+                <h3>原価条件</h3>
+              </div>
+            </div>
+
+            <div class="subsection-title">原酒原材料</div>
+            <div class="form-grid">
+              <label class="field">
+                <span>玄米単価 <span class="unit-hint">(円/kg)</span></span>
+                <input type="number" data-field="brownRiceCostPerKg" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>精米歩合 <span class="unit-hint">(%)</span></span>
+                <input type="number" data-field="ricePolishingRatio" min="1" max="100" step="0.1" />
+              </label>
+              <label class="field">
+                <span>白米1kgあたり製成酒量 <span class="unit-hint">(L/kg)</span></span>
+                <input type="number" data-field="litersPerKgWhiteRice" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>麹歩合 <span class="unit-hint">(%)</span></span>
+                <input type="number" data-field="kojiRatioPercent" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>その他原材料費 <span class="unit-hint">(円/L・原酒)</span></span>
+                <input type="number" data-field="otherRawMaterialCostPerLiter" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>設備・ユーティリティ費 <span class="unit-hint">(円/L・原酒)</span></span>
+                <input type="number" data-field="facilityUtilityCostPerLiter" min="0" step="1" />
+                <small class="field-hint">タンク、冷却、洗浄、衛生資材などの按分想定です。</small>
+              </label>
+            </div>
+
+            <div class="subsection-title">製造人件費</div>
+            <div class="form-grid">
+              <label class="field">
+                <span>醸造期間 <span class="unit-hint">(日)</span></span>
+                <input type="number" data-field="brewingDays" min="0" step="1" />
+              </label>
+              <label class="field">
+                <span>必要人員数 <span class="unit-hint">(人)</span></span>
+                <input type="number" data-field="staffCount" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>人件費 <span class="unit-hint">(円/人日)</span></span>
+                <input type="number" data-field="laborCostPerPersonDay" min="0" step="1" />
+              </label>
+            </div>
+          </section>
+
+          
           <section class="panel">
             <div class="panel-header">
               <div>
@@ -498,32 +493,33 @@
             </div>
           </section>
         </div>
+      </main>
 
-        <section class="panel" id="quote-breakdown">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">Breakdown</p>
-              <h3>見積内訳</h3>
+      <!-- RIGHT PANE: CALCULATOR SCREEN -->
+      <aside class="screen-area">
+        <div class="lcd-display">
+          <div class="lcd-top">
+            <span class="lcd-label">ESTIMATED TOTAL (INC. TAX)</span>
+          </div>
+          <div class="lcd-value" id="summary-total">¥0</div>
+          
+          <div class="lcd-metrics">
+            <div class="metric">
+              <span class="metric-label">UNIT PRICE</span>
+              <span class="metric-val" id="summary-unit-bottle">¥0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">COST / LITER</span>
+              <span class="metric-val" id="summary-liquid-unit-cost">¥0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">VOLUME</span>
+              <span class="metric-val" id="summary-brew-volume">0 L</span>
             </div>
           </div>
+        </div>
 
-          <div class="table-wrap">
-            <table class="quote-table">
-              <thead>
-                <tr>
-                  <th>費目</th>
-                  <th>数量</th>
-                  <th>単価</th>
-                  <th>金額</th>
-                  <th>区分</th>
-                </tr>
-              </thead>
-              <tbody id="line-items-body"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <div class="content-grid">
+        <div class="screen-body">
           <section class="panel" id="quote-preview">
             <div class="panel-header">
               <div>
@@ -581,7 +577,29 @@
               </div>
             </div>
           </section>
+          <section class="panel" id="quote-breakdown">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Breakdown</p>
+              <h3>見積内訳</h3>
+            </div>
+          </div>
 
+          <div class="table-wrap">
+            <table class="quote-table">
+              <thead>
+                <tr>
+                  <th>費目</th>
+                  <th>数量</th>
+                  <th>単価</th>
+                  <th>金額</th>
+                  <th>区分</th>
+                </tr>
+              </thead>
+              <tbody id="line-items-body"></tbody>
+            </table>
+          </div>
+        </section>
           <section class="panel">
             <div class="panel-header">
               <div>
@@ -610,7 +628,14 @@
             <div class="notes-stack" id="assumptions-list"></div>
           </section>
         </div>
-      </main>
+      </aside>
+
+    </div>
+
+    <!-- Hidden elements for JS binding compat -->
+    <div style="display:none;" id="hidden-legacy">
+      <p id="summary-liquor-tax">¥0</p>
+      <p id="summary-alcohol-percent">0%</p>
     </div>
 
     <script src="./app.js"></script>
