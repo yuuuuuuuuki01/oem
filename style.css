@@ -150,10 +150,54 @@ select {
   gap: 32px;
 }
 
+/* Thematic Colors for Panels */
+.theme-basic {
+  --theme-color: #64748b;
+  --theme-bg: #f8fafc;
+}
+
+.theme-ratio {
+  --theme-color: #8b5cf6;
+  --theme-bg: #f5f3ff;
+}
+
+.theme-genshu {
+  --theme-color: #d97706;
+  --theme-bg: #fffbeb;
+}
+
+.theme-alcohol {
+  --theme-color: #0ea5e9;
+  --theme-bg: #f0f9ff;
+}
+
+.theme-blend {
+  --theme-color: #be123c;
+  --theme-bg: #fff1f2;
+}
+
+.theme-fruit {
+  --theme-color: #f97316;
+  --theme-bg: #fff7ed;
+}
+
+.theme-packaging {
+  --theme-color: #0f766e;
+  --theme-bg: #f0fdfa;
+}
+
+.theme-margin {
+  --theme-color: #059669;
+  --theme-bg: #ecfdf5;
+}
+
 /* Beautiful Forms */
 .panel {
-  background: var(--bg-surface);
+  --theme-color: var(--accent);
+  --theme-bg: var(--bg-surface);
+  background: linear-gradient(to bottom right, var(--theme-bg), var(--bg-surface) 60%);
   border: 1px solid var(--border-strong);
+  border-top: 4px solid var(--theme-color);
   border-radius: 16px;
   padding: 32px;
   box-shadow: var(--shadow-sm);
@@ -164,19 +208,31 @@ select {
   box-shadow: var(--shadow-md);
 }
 
+.panel-header {
+  margin-bottom: 24px;
+}
+
 .panel-header h3 {
-  margin: 0 0 24px;
-  font-size: 18px;
-  font-weight: 700;
-  border-bottom: 2px solid var(--border);
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
   padding-bottom: 12px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.04);
 }
 
 .eyebrow {
-  display: none;
+  display: inline-block;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  background: var(--theme-color);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
 }
-
-/* Hid old eyebrows for cleaner look */
 
 .subsection-title {
   margin: 24px 0 16px;
