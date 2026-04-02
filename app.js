@@ -21,6 +21,7 @@ const numericFields = new Set([
   "otherLiquorAlcoholPercent",
   "fruitIngredientBlendPercent",
   "fruitIngredientCostPerLiter",
+  "fruitIngredientProcessingCostPerLiter",
   "fruitIngredientAlcoholPercent",
   "otherRawMaterialCostPerLiter",
   "brewingDays",
@@ -158,6 +159,7 @@ function createDefaultForm() {
     fruitIngredientName: "果汁等",
     fruitIngredientBlendPercent: 8,
     fruitIngredientCostPerLiter: 340,
+    fruitIngredientProcessingCostPerLiter: 45,
     fruitIngredientAlcoholPercent: 0,
     otherRawMaterialCostPerLiter: 36,
     brewingDays: 28,
@@ -356,12 +358,21 @@ function calculateQuote(form) {
   const alcoholCost = rawAlcoholVolume * sanitizeNumber(form.alcoholCostPerLiter);
   const otherLiquorCost = otherLiquorVolume * sanitizeNumber(form.otherLiquorCostPerLiter);
   const fruitIngredientCost = fruitIngredientVolume * sanitizeNumber(form.fruitIngredientCostPerLiter);
+  const fruitIngredientProcessingCost =
+    fruitIngredientVolume * sanitizeNumber(form.fruitIngredientProcessingCostPerLiter);
   const otherRawMaterialCost = genshuVolume * sanitizeNumber(form.otherRawMaterialCostPerLiter);
   const laborCost = laborPersonDays * sanitizeNumber(form.laborCostPerPersonDay);
   const facilityCost = genshuVolume * sanitizeNumber(form.facilityUtilityCostPerLiter);
 
   const liquidManufacturingCost = roundCurrency(
-    riceCost + alcoholCost + otherLiquorCost + fruitIngredientCost + otherRawMaterialCost + laborCost + facilityCost
+    riceCost +
+      alcoholCost +
+      otherLiquorCost +
+      fruitIngredientCost +
+      fruitIngredientProcessingCost +
+      otherRawMaterialCost +
+      laborCost +
+      facilityCost
   );
   const derivedLiquidCostPerLiter = taxableVolumeLiters > 0 ? liquidManufacturingCost / taxableVolumeLiters : 0;
   const pureAlcoholLiters = genshuVolume * baseSakeAlcoholRate + rawAlcoholPure + otherLiquorPure + fruitIngredientPure;
@@ -375,6 +386,13 @@ function calculateQuote(form) {
     createLineItem("原料用アルコール", "L", rawAlcoholVolume, form.alcoholCostPerLiter, "配合原材料"),
     createLineItem(form.otherLiquorName || "ブレンド酒", "L", otherLiquorVolume, form.otherLiquorCostPerLiter, "配合原材料"),
     createLineItem(form.fruitIngredientName || "果汁等", "L", fruitIngredientVolume, form.fruitIngredientCostPerLiter, "配合原材料"),
+    createLineItem(
+      `${form.fruitIngredientName || "果汁等"}加工賃`,
+      "L",
+      fruitIngredientVolume,
+      form.fruitIngredientProcessingCostPerLiter,
+      "配合原材料"
+    ),
     createLineItem("その他原材料", "L", genshuVolume, form.otherRawMaterialCostPerLiter, "原酒原材料"),
     createLineItem("人件費", "人日", laborPersonDays, form.laborCostPerPersonDay, "製造経費"),
     createLineItem("設備・ユーティリティ費", "L", genshuVolume, form.facilityUtilityCostPerLiter, "製造経費"),
@@ -414,6 +432,7 @@ function calculateQuote(form) {
     `純アルコール寄与率は 原酒 ${formatQuantity(contributionSeed.genshu)}%、原料用アルコール ${formatQuantity(contributionSeed.rawAlcohol)}%、${form.otherLiquorName || "ブレンド酒"} ${formatQuantity(contributionSeed.otherLiquor)}% として正規化しています。`,
     `目標度数 ${formatQuantity(targetAlcoholPercent)}% に対し、必要原酒量は ${formatQuantity(roundQuantity(genshuVolume))} L、加水量は ${formatQuantity(roundQuantity(dilutionWaterVolume))} L。`,
     `原料用アルコール ${formatQuantity(roundQuantity(rawAlcoholVolume))} L、${form.otherLiquorName || "ブレンド酒"} ${formatQuantity(roundQuantity(otherLiquorVolume))} L、${form.fruitIngredientName || "果汁等"} ${formatQuantity(roundQuantity(fruitIngredientVolume))} L を配合。`,
+    `${form.fruitIngredientName || "果汁等"} の仕入単価 ${formatCurrency(sanitizeNumber(form.fruitIngredientCostPerLiter))} / L、加工賃 ${formatCurrency(sanitizeNumber(form.fruitIngredientProcessingCostPerLiter))} / L で算定。`,
     `出荷想定本数 ${formatQuantity(bottleCount)} 本、出荷量 ${formatQuantity(roundQuantity(orderedVolumeLiters))} L、想定ロット数 ${formatQuantity(roundQuantity(lotCount))} ロット。`,
     `${formatQuantity(bottleSizeMl)}ml は ${appliedPackaging.label} の包装単価を使用しています。`,
     `白米使用量 ${formatQuantity(roundQuantity(whiteRiceKg))} kg、玄米調達量 ${formatQuantity(roundQuantity(brownRiceKg))} kg、麹米 ${formatQuantity(roundQuantity(kojiRiceKg))} kg、掛米 ${formatQuantity(roundQuantity(kakemaiKg))} kg。`,
@@ -640,6 +659,7 @@ function exportCsv() {
     ["raw_alcohol_volume_liters", result.rawAlcoholVolume],
     ["other_liquor_volume_liters", result.otherLiquorVolume],
     ["fruit_ingredient_volume_liters", result.fruitIngredientVolume],
+    ["fruit_ingredient_processing_cost_per_liter", formState.fruitIngredientProcessingCostPerLiter],
     ["estimated_alcohol_percent", result.estimatedAlcoholPercent],
     ["liquor_tax_rate_per_kl", result.liquorTaxRatePerKl],
     ["liquor_tax_amount", result.liquorTaxAmount],
